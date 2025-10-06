@@ -24,11 +24,6 @@ class TransformerModel(nn.Module):
                     self.feat_all[name] = nn.Parameter(v1.to(device), requires_grad = False)
                     self.fc_all[name] = nn.Sequential(
                         nn.Linear(v1.shape[1], d_model, device=device)
-                        # nn.ReLU(),
-                        # nn.Dropout(0.2),
-                        # nn.Linear(3*d_model, 2*d_model, device=device),
-                        # nn.ReLU(),
-                        # nn.Linear(2*d_model, d_model, device=device)
                     )
                     
             else:
@@ -45,11 +40,6 @@ class TransformerModel(nn.Module):
                 self.feat_all[k] = param
                 self.fc_all[k] = nn.Sequential(
                         nn.Linear(v1.shape[1], d_model, device=device)
-                        # nn.ReLU(),
-                        # nn.Dropout(0.2),
-                        # nn.Linear(3*d_model, 2*d_model, device=device),
-                        # nn.ReLU(),
-                        # nn.Linear(2*d_model, d_model, device=device)
                     )
 
 
@@ -58,12 +48,6 @@ class TransformerModel(nn.Module):
             self.pos_encoding = self.create_positional_encoding(seq_len, d_model).to(device)    # Positional encoding (computed dynamically)
         elif pos_emb == 'learnable':
             self.pos_embedding = nn.Embedding(seq_len, d_model).to(device)
-        
-        # self.transformer = nn.TransformerEncoder(
-        #     nn.TransformerEncoderLayer(d_model=d_model, nhead=nhead, dim_feedforward=4*d_model).to(device), 
-        #     num_layers = N_encoder_layers
-        # )
-
         self.transformer = nn.TransformerEncoder(
             nn.TransformerEncoderLayer(d_model=d_model, nhead=nhead, dim_feedforward=4*d_model, activation='gelu').to(device),
             num_layers = N_encoder_layers
@@ -94,9 +78,7 @@ class TransformerModel(nn.Module):
         x = self.compute_embedding(x) + self.get_x_pos_emb(x)
         x = self.transformer(x.permute(1, 0, 2))
         x = x.permute(1, 0, 2)
-        # x = torch.concat([x[:,0,:], x[:,1,:], x[:,2,:]], dim=1)
-        # x = x[:, :3, :]              # shape: [batch, 3, hidden_dim]
-        x = x[:, 0:3:2, :]              # shape: [batch, 2, hidden_dim]    # only considering head and tail for LP
+        x = x[:, 0:3:2, :]            # shape: [batch, 2, hidden_dim]    # only considering head and tail for LP
         x = x.reshape(x.size(0), -1) # shape: [batch, 2 * hidden_dim]
         x = self.classifire(x)
         return x
@@ -119,10 +101,6 @@ class TransformerModel(nn.Module):
         Indices = []
         for t in self.entity:
             matching_keys = [k for k in self.feat_all.keys() if k.split('|')[0]==t]
-            # if not matching_keys:
-            #     print(f"No matching keys found for token: {t}")
-            # else:
-            #     print(f"Token {t} matched keys: {matching_keys}")
             tensors = [self.fc_all[k](self.feat_all[k]) for k in matching_keys]
             merged_tensor = torch.stack(tensors, dim=0).sum(dim=0)  # or use torch.mean(...), etc.
             W_list.append(merged_tensor)
@@ -140,18 +118,9 @@ class TransformerModel(nn.Module):
         sorted_order = torch.argsort(entity_indices)
         
         # Apply the sorted order to both the indices and the tensor W
-        # sorted_entity_indices = entity_indices[sorted_order]
         sorted_W = W[sorted_order]
 
-        # for debugging
-        # print("tokens.shape:", tokens.shape)
-        # print("tokens.min():", tokens.min().item(), "tokens.max():", tokens.max().item())
-        # print("embedding table size:", W.shape[0])
-        # assert tokens.min() >= 0, "🚨 Token index is negative!"
-        # assert tokens.max() < W.shape[0], "🚨 Token index exceeds embedding table size!"
-
         return F.embedding(tokens, sorted_W)
-
 
     
     def create_positional_encoding(self, seq_len, d_model):
@@ -206,7 +175,6 @@ def get_probs(context_idx, model, mask_token, seq_len, query=None, late_softmax=
     return out
 
 ##########################
-
 def lr_lambda(current_step):
     if current_step < warmup_steps:
         return float(current_step) / float(max(1, warmup_steps))
