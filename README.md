@@ -3,6 +3,11 @@ This repository contains the implementation of NetMedGPT, a transformer-based fo
 
 <img width="2539" height="3235" alt="figure1_NetMedGPT_overview" src="https://github.com/user-attachments/assets/8c863158-8438-4862-a941-6b0b12a330ed" />
 
+1) conda env
+2) git clone
+3) 
+
+
 ## Prepare environment
 1. First clone the repository and install the environment
 ```
