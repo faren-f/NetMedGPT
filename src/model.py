@@ -1,8 +1,13 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F 
+import math
+import warnings
 
-# Create a transformer model for masked word prediction
+warnings.filterwarnings(
+    "ignore",
+    message="enable_nested_tensor is True, but self.use_nested_tensor is False*")
+
 class TransformerModel(nn.Module):
     def __init__(self, vocab_size, d_model, nhead, N_encoder_layers, seq_len, device, feat, nodes, entity, relation_mask_index, mask_token_id=None, pos_emb=None):
         super(TransformerModel, self).__init__()
@@ -18,9 +23,9 @@ class TransformerModel(nn.Module):
         self.feat_all = nn.ParameterDict()
         self.fc_all = nn.ModuleDict()
         for k, v in feat.items():
-            if len(v) > 1:                      # nodes that have two or more type of attributes e.g., protein  
+            if len(v) > 1:                      
                 for k1, v1 in v.items():
-                    name = f"{k}|{k1}"  # attach parent name to subkey
+                    name = f"{k}|{k1}"  
                     self.feat_all[name] = nn.Parameter(v1.to(device), requires_grad = False)
                     self.fc_all[name] = nn.Sequential(
                         nn.Linear(v1.shape[1], d_model, device=device)
@@ -29,11 +34,11 @@ class TransformerModel(nn.Module):
             else:
                 v1 = list(v.values())[0]
                 param = nn.Parameter(v1.to(device))
-                if list(v.keys())[0] == 'random':  # nodes that do not have attr e.g., anatomy
+                if list(v.keys())[0] == 'random':  
                     param.requires_grad = True
-                elif list(v.keys())[0] == 'fixed':    # relations and mask
+                elif list(v.keys())[0] == 'fixed':    
                     param.requires_grad = False
-                else:                                # nodes that have one type of attributes e.g., disease
+                else:                                
                     param.requires_grad = False
                     
                     
@@ -46,19 +51,17 @@ class TransformerModel(nn.Module):
         self.pos_emb = pos_emb # positional embedding
         if pos_emb == 'fixed':
             self.pos_encoding = self.create_positional_encoding(seq_len, d_model).to(device)    # Positional encoding (computed dynamically)
-        elif pos_emb == 'learnable':
-            self.pos_embedding = nn.Embedding(seq_len, d_model).to(device)
         self.transformer = nn.TransformerEncoder(
             nn.TransformerEncoderLayer(d_model=d_model, nhead=nhead, dim_feedforward=4*d_model, activation='gelu').to(device),
             num_layers = N_encoder_layers
             )
 
         
-        self.fc = nn.Linear(d_model, vocab_size+1).to(device)  # Output layer: Predict all vocab including [MASK]
+        self.fc = nn.Linear(d_model, vocab_size+1).to(device)  
         
         # binary classification layer 
         self.classifire = nn.Sequential(
-            nn.Linear(d_model * 2, d_model),  # considering only head and tail for LP unless it should be d_model*3
+            nn.Linear(d_model * 2, d_model),  
             nn.ReLU(),
             nn.Linear(d_model, d_model//2),
             nn.ReLU(),
@@ -78,8 +81,8 @@ class TransformerModel(nn.Module):
         x = self.compute_embedding(x) + self.get_x_pos_emb(x)
         x = self.transformer(x.permute(1, 0, 2))
         x = x.permute(1, 0, 2)
-        x = x[:, 0:3:2, :]            # shape: [batch, 2, hidden_dim]    # only considering head and tail for LP
-        x = x.reshape(x.size(0), -1) # shape: [batch, 2 * hidden_dim]
+        x = x[:, 0:3:2, :]            
+        x = x.reshape(x.size(0), -1) 
         x = self.classifire(x)
         return x
 
@@ -135,9 +138,6 @@ class TransformerModel(nn.Module):
     def get_x_pos_emb(self, x):
         if self.pos_emb == 'fixed':
             x_pos_emb = self.pos_encoding[:x.shape[1], :]
-        elif self.pos_emb == 'learnable':
-            positions = torch.arange(0, x.shape[1], device=x.device).unsqueeze(0)
-            x_pos_emb = self.pos_embedding(positions)
         else:
             x_pos_emb = 0
         return x_pos_emb
@@ -152,35 +152,10 @@ def create_mask(data, vocab_size, mask_token_id, mask_prob=0.2, min_mask = 4):
             mask[i] = torch.zeros(data.shape[1], dtype=torch.bool)
             true_indices = torch.randperm(data.shape[1])[:min_mask]    
             mask[i, true_indices] = True
-        elif mask[i].sum() == data.shape[1]:                           ########## this was previously if
+        elif mask[i].sum() == data.shape[1]:                           
             mask[i, 0] = False
-    masked_data[mask] = mask_token_id  # assign number of mask_token_id to the masks
+    masked_data[mask] = mask_token_id  
     return masked_data, mask
-
-
-def get_probs(context_idx, model, mask_token, seq_len, query=None, late_softmax=False):
-
-    len_context = len(context_idx)
-    assert len_context < seq_len
-    
-    context_idx = context_idx + [mask_token] * (seq_len - len_context)   # extend context with mask tokens
-    context_idx = torch.tensor(context_idx).reshape(1, -1).to(model.device)
-    out = model(context_idx)[0, len_context, :]                          # get the first masked token
-    if not late_softmax:
-        out = F.softmax(out, dim=0)
-    if query != None:
-        out = out[query]
-    if late_softmax:
-        out = F.softmax(out, dim=0)
-    return out
-
-##########################
-def lr_lambda(current_step):
-    if current_step < warmup_steps:
-        return float(current_step) / float(max(1, warmup_steps))
-    progress = float(current_step - warmup_steps) / float(max(1, total_steps - warmup_steps))
-    return 0.5 * (1.0 + math.cos(math.pi * progress))
-
 
 ########################################################################################################
 class Classifier(nn.Module):
@@ -189,22 +164,27 @@ class Classifier(nn.Module):
         
         # binary classification layer 
         layers = []
-        input_dim = d_model * 2  # assuming head and tail concatenation
+        input_dim = d_model * 2  
         for output_dim in d_classifier:
             layers.append(nn.Linear(input_dim, output_dim))
             layers.append(nn.ReLU())
             input_dim = output_dim
 
-        layers.append(nn.Linear(input_dim, 1))  # Final output layer
+        layers.append(nn.Linear(input_dim, 1))  
         self.classifier = nn.Sequential(*layers).to(device)
 
     def forward(self, x):
-        # x = x[:, :3, :]              # shape: [batch, 3, hidden_dim]
-        x = x[:, 0:3:2, :]              # shape: [batch, 2, hidden_dim]    # only considering head and tail for LP
-        x = x.reshape(x.size(0), -1) # shape: [batch, 2 * hidden_dim]
+        # x = x[:, :3, :]              
+        x = x[:, 0:3:2, :]              
+        x = x.reshape(x.size(0), -1) 
         x = self.classifier(x)
         return x
 
+def lr_lambda(current_step, warmup_steps, total_steps):
+    if current_step < warmup_steps:
+        return current_step / max(1, warmup_steps)
+    progress = (current_step - warmup_steps) / max(1, total_steps - warmup_steps)
+    return 0.5 * (1.0 + math.cos(math.pi * progress))
 
 
 
