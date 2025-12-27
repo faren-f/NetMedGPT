@@ -3,44 +3,11 @@ This repository contains the implementation of NetMedGPT, a transformer-based fo
 
 <img width="2539" height="3235" alt="figure1_NetMedGPT_overview" src="https://github.com/user-attachments/assets/8c863158-8438-4862-a941-6b0b12a330ed" />
 
+# installation
+## Prepare environment
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+1. First clone the repository and install the environment
+```
 git clone https://github.com/faren-f/NetMedGPT.git
 cd NetMedGPT
 conda create -n netmedgpt python=3.10
@@ -48,27 +15,13 @@ conda activate netmedgpt
 python -m pip install -U pip
 pip install -r requirements.txt
 pip install -e .
-
-
-
-## Prepare environment
-1. First clone the repository and install the environment
-```
-git clone https://github.com/faren-f/ChatNetMedGPT.git
-cd ChatNetMedGPT
-```
-For Linux:
-```
-conda env create -f chatnetmedgpt_linux.yml
 ```
 
-For MAC:
-```
-conda env create -f chatnetmedgpt_mac.yml
-```
+2. Download the data and model parameters either from the barcode below:
+<img width="164" height="164" alt="download" src="https://github.com/user-attachments/assets/376ee90b-04a7-45fe-be7f-e2c42eb6ee4f" />
 
-2. Download the data and model parameters
-```
+or:
+
 wget https://cloud.uni-hamburg.de/public.php/dav/files/AoHLe9ARTC6Z3tL/?accept=zip
 unzip index.html?accept=zip
 mv data/NetMedGPT.pt model
