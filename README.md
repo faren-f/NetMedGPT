@@ -1,27 +1,25 @@
 # NetMedGPT - A network medicine foundation model for extensive disease mechanism mining and drug repurposing
-This repository contains the implementation of NetMedGPT, a transformer-based foundation model for network medicine. NetMedGPT performs unified, zero-shot inference over large-scale biomedical knowledge graphs by learning contextualized representations of biomedical entities and their relations through masked token prediction on graph-derived sequences. Without task-specific retraining, the model supports prediction of various tasks such as drug indications, targets, adverse drug reactions, contraindications, and off-label uses, and enables scalable drug repurposing and mechanistic interpretation via context-specific subnetwork generation. The repository also includes an interactive chatbot that accepts free-text user queries, converts them into pseudo-sentences compatible with the model, and returns ranked predictions.
-
-<img width="2539" height="3235" alt="figure1_NetMedGPT_overview" src="https://github.com/user-attachments/assets/8c863158-8438-4862-a941-6b0b12a330ed" />
-
-
-# NetMedGPT  
-**A network medicine foundation model for extensive disease mechanism mining and drug repurposing**
 
 ## Overview
-
 NetMedGPT is a transformer-based foundation model for network medicine that enables unified, zero-shot inference over large-scale biomedical knowledge graphs. The model learns contextualized representations of biomedical entities and relations via **masked token prediction on graph-derived sequences**.
 
 Without task-specific retraining, NetMedGPT supports multiple biomedical inference tasks, including:
-
 - Drug–disease indication prediction  
 - Drug–target interaction prediction  
 - Adverse drug reaction (ADR) prediction  
 - Contraindication identification  
-- Off-label use discovery  
+- Off-label use discovery 
 
 In addition, NetMedGPT enables **scalable drug repurposing** and **mechanistic interpretation** through context-specific subnetwork generation.
+It also includes an **interactive chatbot** that accepts free-text user queries, converts them into model-compatible pseudo-sentences, and returns ranked predictions.
 
-The repository also includes an **interactive chatbot** that accepts free-text user queries, converts them into model-compatible pseudo-sentences, and returns ranked predictions.
+<img width="2539" height="3235" alt="figure1_NetMedGPT_overview" src="https://github.com/user-attachments/assets/8c863158-8438-4862-a941-6b0b12a330ed" />
+
+
+
+
+  
+
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/8c863158-8438-4862-a941-6b0b12a330ed" alt="NetMedGPT overview" width="600"/>
