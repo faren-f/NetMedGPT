@@ -52,42 +52,53 @@ wget --content-disposition "https://cloud.uni-hamburg.de/s/r74Ro8rmQ2sHwsL/downl
 unzip *.zip
 rm *.zip
 
+After downloading, place the extracted data/ directory inside the root of the NetMedGPT repository.
+
+
+## Training
+
+NetMedGPT is evaluated under three complementary training and evaluation strategies:
+
+- **Random link split**
+- **Zero-shot split**
+- **Disease area split**
+Supported disease areas:
+- adrenal_gland  
+- anemia  
+- autoimmune  
+- cardiovascular  
+- cell_proliferation  
+- diabetes  
+- mental_health  
+- metabolic_disorder  
+- neurodegenerative  
+
+
+
+### Training the model
+
+To train the model and reproduce the reported results, run:
+
+```bash
+python train.py
+
+
+
+Arguments
+
+--gpu
+GPU device ID
+Type: int
+Default: 0
+
+--seed
 
 
 
 
-2. Download the data folder either from the barcode below:
-<img width="164" height="164" alt="download" src="https://github.com/user-attachments/assets/376ee90b-04a7-45fe-be7f-e2c42eb6ee4f" />
-
-or the link below:
-```
-wget --content-disposition "https://cloud.uni-hamburg.de/s/r74Ro8rmQ2sHwsL/download?accept=zip"
-unzip *.zip
-rm *.zip
-```
-and place in NetMedGPT
-
-# NetMedGPT
-## train 
-NetMedGPT is evaluated in three sterategies of **random link split**, **zero shot split** and **disease area split**
-To reproduce the results and save the correponding models run the command line below:
-
-```
-train.py 
-```
-To run the model and get the result use the command below
 
 
 
-
-```
-python netmedgpt_llm.py --user_text "user_text"
-```
-```"user_text"``` is the user query. For example
-```
-python netmedgpt_llm.py --user_text "for diabetes with egfr mutation what is the best treatment and what are the adverse drug reactions"
-```
-The output is saved as a ```.csv``` file at ```data/user_response```.
 
 ## inference for drug repurposing
 gives confidence score
