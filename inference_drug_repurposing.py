@@ -26,7 +26,7 @@ N_top = args.N_top
 #########################
 with open("data/parameters.json", 'r') as file:
     all_param = json.load(file)
-model_dir = os.path.join(all_param['files']['data_dir'], 'saved_models')
+model_dir = os.path.join(all_param['files']['data_dir'], 'model_checkpoints')
 data_dir = all_param['files']['data_dir']
 user_response = os.path.join(all_param['files']['data_dir'], 'user_response')
 checkpoint_path_netmedgpt = os.path.join(model_dir, "netmedgpt.pt")

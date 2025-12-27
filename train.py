@@ -12,7 +12,6 @@ from torch.utils.data import TensorDataset, DataLoader
 from torch.cuda.amp import autocast, GradScaler
 from torch.optim.lr_scheduler import LambdaLR
 import argparse
-
 from netmedgpt.utilities import link_pred_val, node_level_eval, sim 
 from netmedgpt.model import TransformerModel, create_mask, lr_lambda
 from netmedgpt.prepare_txgnn_splits import prepare_txgnn_data
@@ -42,8 +41,8 @@ best_hyperparam = all_param['best_hyperparam']
 os.makedirs(os.path.join(all_param['files']['data_dir'], 'result'), exist_ok = True) 
 result_dir = os.path.join(all_param['files']['data_dir'], 'result')
 
-os.makedirs(os.path.join(all_param['files']['data_dir'], "saved_models"), exist_ok=True)
-model_dir = os.path.join(all_param['files']['data_dir'], 'saved_models')
+os.makedirs(os.path.join(all_param['files']['data_dir'], "model_checkpoints/saved_models_evaluation"), exist_ok=True)
+model_dir = os.path.join(all_param['files']['data_dir'], 'model_checkpoints/saved_models_evaluation')
 
 ############################################################################################################################
 nodes = pd.read_csv(os.path.join(data_dir, 'KG/nodes.csv'), sep= ',')
@@ -240,7 +239,6 @@ if best_model_state:
     }
     torch.save(ckpt, model_save_path)
     
-
 # Save final val result
 columns = ['auc', 'auprc']
 LP_result_val_df = pd.DataFrame(LP_result_val, columns=columns)
