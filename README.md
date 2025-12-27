@@ -3,10 +3,17 @@ This repository contains the implementation of NetMedGPT, a transformer-based fo
 
 <img width="2539" height="3235" alt="figure1_NetMedGPT_overview" src="https://github.com/user-attachments/assets/8c863158-8438-4862-a941-6b0b12a330ed" />
 
-1) git clone
-2) conda create --name netmedgpt python=3.10
-3) pip install -U -r requirements.txt
-4) pip install -e .
+git clone https://github.com/faren-f/NetMedGPT.git
+cd NetMedGPT
+conda create -n netmedgpt python=3.10
+conda activate netmedgpt
+python -m pip install -U pip
+pip install -e .
+
+
+
+4) pip install -U -r requirements.txt
+5) pip install -e .
 
 
 ## Prepare environment
