@@ -13,10 +13,10 @@ from torch.cuda.amp import autocast, GradScaler
 from torch.optim.lr_scheduler import LambdaLR
 import argparse
 
-from src.utilities import link_pred_val, node_level_eval, sim 
-from src.model import TransformerModel, create_mask, lr_lambda
-from src.prepare_txgnn_splits import prepare_txgnn_data
-from src.sentence_generation import sentence_generation
+from netmedgpt.utilities import link_pred_val, node_level_eval, sim 
+from netmedgpt.model import TransformerModel, create_mask, lr_lambda
+from netmedgpt.prepare_txgnn_splits import prepare_txgnn_data
+from netmedgpt.sentence_generation import sentence_generation
 
 ####### arg parser
 parser = argparse.ArgumentParser()

@@ -5,7 +5,7 @@ import torch
 from tqdm import tqdm
 import torch.nn.functional as F
 from torch.utils.data import TensorDataset, DataLoader
-from src.model import TransformerModel
+from netmedgpt.model import TransformerModel
 import argparse
 import time
 

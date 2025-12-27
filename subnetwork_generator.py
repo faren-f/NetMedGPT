@@ -5,8 +5,8 @@ import torch
 from tqdm import tqdm
 import torch.nn.functional as F
 from torch.utils.data import TensorDataset, DataLoader
-from src.model import TransformerModel
-from src.metapath_generation import metapath_generation
+from netmedgpt.model import TransformerModel
+from netmedgpt.metapath_generation import metapath_generation
 import argparse
 import time
 
