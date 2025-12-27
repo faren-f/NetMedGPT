@@ -6,8 +6,21 @@ with open("netmedgpt/version.py") as f:
     exec(f.read(), version)
 
 root = Path(__file__).parent
-requirements = (root / "requirements.txt").read_text().splitlines()
 
+raw_reqs = (root / "requirements.txt").read_text(encoding="utf-8").splitlines()
+
+def clean_reqs(lines):
+    reqs = []
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("--"):
+            continue
+        reqs.append(line)
+    return reqs
+
+requirements = clean_reqs(raw_reqs)
 
 setup(
     name="netmedgpt",
@@ -19,5 +32,6 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     python_requires=">=3.9",
+    install_requires=requirements, 
 )
 

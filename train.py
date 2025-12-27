@@ -17,6 +17,8 @@ from netmedgpt.utilities import link_pred_val, node_level_eval, sim
 from netmedgpt.model import TransformerModel, create_mask, lr_lambda
 from netmedgpt.prepare_txgnn_splits import prepare_txgnn_data
 from netmedgpt.sentence_generation import sentence_generation
+import warnings
+warnings.filterwarnings("ignore")
 
 ####### arg parser
 parser = argparse.ArgumentParser()
@@ -165,7 +167,6 @@ optimizer = optim.Adam(model.parameters(), lr=best_hyperparam['learning_rate'])
 scaler = GradScaler()
 warmup_steps = int(0.1 * Epoch * len(dataloader))  
 total_steps = Epoch * len(dataloader)
-# scheduler = LambdaLR(optimizer, lr_lambda)  
 scheduler = LambdaLR(optimizer, lr_lambda=lambda step: lr_lambda(step, warmup_steps, total_steps))
 
 criterion = nn.CrossEntropyLoss(ignore_index=vocab_size)
@@ -222,10 +223,6 @@ for epoch in range(Epoch):
 
     if (patience_counter >= patience_limit):
             break    
-
-#save best model
-# if best_model_state:
-#     torch.save(best_model_state, model_save_path)
 
 if best_model_state:
     ckpt = {

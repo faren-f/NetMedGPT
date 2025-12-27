@@ -29,9 +29,7 @@ def sentence_generation(edge_index, nodes, queried_node_types, queried_edge_type
         edges_i = edges_i.drop_duplicates()
         
         val_edges_one_side = val_txgnn.loc[val_txgnn['relation'] == i, ["x_index", "y_index", "xy"]].copy()
-        print(val_edges_one_side.shape)
         test_edges_one_side = test_txgnn.loc[test_txgnn['relation'] == i, ["x_index", "y_index", "xy"]].copy()
-        print(test_edges_one_side.shape)
     
         all_drug_ids = edges_i.loc[:,'y_index'].unique()
     
@@ -81,9 +79,6 @@ def sentence_generation(edge_index, nodes, queried_node_types, queried_edge_type
     
     train_data_edge_index = train_edge_index_df.to_numpy().T
     train_data_edge_index_pretrain = torch.tensor(train_data_edge_index, dtype = torch.long)
-
-    print(f"train_ours:{train_edge_index_df.shape}")
-    print(f"train_txgnn:{train_txgnn.shape}")
         
     set_seed(seed)  
     model = Node2Vec(
