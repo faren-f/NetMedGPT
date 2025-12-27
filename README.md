@@ -15,8 +15,6 @@ It also includes an **interactive chatbot** that accepts free-text user queries,
 
 <img width="2539" height="3235" alt="figure1_NetMedGPT_overview" src="https://github.com/user-attachments/assets/8c863158-8438-4862-a941-6b0b12a330ed" />
 
-</p>
-
 ---
 
 ## Installation
