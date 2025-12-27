@@ -14,6 +14,7 @@ In addition, NetMedGPT enables **scalable drug repurposing** and **mechanistic i
 It also includes an **interactive chatbot** that accepts free-text user queries, converts them into model-compatible pseudo-sentences, and returns ranked predictions.
 
 <img width="2539" height="3235" alt="figure1_NetMedGPT_overview" src="https://github.com/user-attachments/assets/8c863158-8438-4862-a941-6b0b12a330ed" />
+
 ---
 
 ## Installation
@@ -32,31 +33,28 @@ conda activate netmedgpt
 python -m pip install -U pip
 pip install -r requirements.txt
 pip install -e .
-
-
-
-
-
-
-
-
-
-
-
-
-# installation
-## Prepare environment
-
-1. First clone the repository and install the environment
 ```
-git clone https://github.com/faren-f/NetMedGPT.git
-cd NetMedGPT
-conda create -n netmedgpt python=3.10
-conda activate netmedgpt
-python -m pip install -U pip
-pip install -r requirements.txt
-pip install -e .
-```
+
+### 2. Data download
+
+Download the `data/` directory using **one** of the following options.
+
+#### Option A: QR code
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/376ee90b-04a7-45fe-be7f-e2c42eb6ee4f" alt="Data download QR code" width="160"/>
+</p>
+
+### Option B: Command line
+
+```bash
+wget --content-disposition "https://cloud.uni-hamburg.de/s/r74Ro8rmQ2sHwsL/download?accept=zip"
+unzip *.zip
+rm *.zip
+
+
+
+
 
 2. Download the data folder either from the barcode below:
 <img width="164" height="164" alt="download" src="https://github.com/user-attachments/assets/376ee90b-04a7-45fe-be7f-e2c42eb6ee4f" />
