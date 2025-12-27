@@ -1,9 +1,7 @@
 # NetMedGPT - A network medicine foundation model for extensive disease mechanism mining and drug repurposing
 This repository contains the implementation of NetMedGPT, a transformer-based foundation model for network medicine. NetMedGPT performs unified, zero-shot inference over large-scale biomedical knowledge graphs by learning contextualized representations of biomedical entities and their relations through masked token prediction on graph-derived sequences. Without task-specific retraining, the model supports prediction of various tasks such as drug indications, targets, adverse drug reactions, contraindications, and off-label uses, and enables scalable drug repurposing and mechanistic interpretation via context-specific subnetwork generation. The repository also includes an interactive chatbot that accepts free-text user queries, converts them into pseudo-sentences compatible with the model, and returns ranked predictions.
 
-
 <img width="2539" height="3235" alt="figure1_NetMedGPT_overview" src="https://github.com/user-attachments/assets/8c863158-8438-4862-a941-6b0b12a330ed" />
-
 
 ## Prepare environment
 1. First clone the repository and install the environment
