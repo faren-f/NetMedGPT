@@ -8,6 +8,39 @@ This repository contains the implementation of NetMedGPT, a transformer-based fo
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 git clone https://github.com/faren-f/NetMedGPT.git
 cd NetMedGPT
 conda create -n netmedgpt python=3.10
