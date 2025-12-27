@@ -75,28 +75,52 @@ Supported disease areas:
 
 
 
-### Training the model
+## Training Script Usage
 
-To train the model and reproduce the reported results, run:
+The training script is executed from the command line using `train.py`.
 
-```bash
-python train.py
+### Command
+python train.py [arguments]
+
+### Arguments
+
+- *--gpu*  
+  GPU device ID  
+  **Type:** int  
+  **Default:** `0`
+
+- *--seed*  
+  Random seed for reproducibility  
+  **Type:** int  
+  **Default:** `1`
+
+- *--inference*  
+  Inference or data split strategy  
+  **Type:** string  
+  **Default:** `random_link_split`  
+
+  **Allowed values:**
+  - random_link_split
+  - zero_shot_split
+  - adrenal_gland
+  - anemia
+  - autoimmune
+  - cardiovascular
+  - cell_proliferation
+  - diabetes
+  - mental_health
+  - metabolic_disorder
+  - neurodigenerative
+
+### Example
+python train.py --gpu 1 --seed 42 --inference cardiovascular
 
 
+### Notes
 
-Arguments
-
---gpu
-GPU device ID
-Type: int
-Default: 0
-
---seed
-
-
-
-
-
+- If *--gpu* is not specified, GPU 0 is used.
+- If *--seed* is not specified, the default seed is 1.
+- The value of *--inference* must be one of the listed options.
 
 
 
