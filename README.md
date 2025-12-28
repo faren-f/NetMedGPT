@@ -84,7 +84,7 @@ The training script is executed from the command line using `train.py`.
 
 
 ### Command
-python train.py [arguments]
+```python train.py [arguments]```
 
 ### Arguments
 
@@ -117,7 +117,7 @@ python train.py [arguments]
   - neurodigenerative
 
 ### Example
-python train.py --gpu 1 --seed 1 --inference cardiovascular
+```python train.py --gpu 1 --seed 1 --inference cardiovascular```
 
 
 ### Notes
@@ -136,7 +136,7 @@ Drug repurposing inference identifies and ranks candidate drugs for a given set 
 The inference script is executed from the command line and produces ranked predictions with confidence scores.
 
 ### Command
-python inference_drug_repurposing.py [arguments]
+```python inference_drug_repurposing.py [arguments]```
 
 
 ### Arguments
@@ -219,6 +219,16 @@ python inference_multi_task.py [arguments]
   **Type:** int  
   **Default:** `1`
 
+### Example
+```python inference_multi_task.py
+--gpu 0
+--head_csv data/heads.csv
+--head_type drug
+--tail_type gene/protein
+--relation_type drug_protein
+--N_top 20
+--batch_size 1```
+
 ### Notes
 
 - The values of *--head_type*, *--tail_type*, and *--relation_type* must be consistent with the schema of the underlying knowledge graph.
@@ -235,7 +245,7 @@ The generated subnetworks highlight biologically and pharmacologically relevant 
 
 ### Command
 
-python generate_subnetwork.py [arguments]
+```python generate_subnetwork.py [arguments]```
 
 
 ### Arguments
@@ -275,6 +285,18 @@ python generate_subnetwork.py [arguments]
   Must be smaller than the number of provided head nodes.  
   **Type:** int  
   **Default:** `1`
+
+
+### Example
+```python generate_subnetwork.py
+--gpu 0
+--head_index 14016
+--head_type drug
+--tail_type gene/protein
+--relation_type drug_protein
+--N_top 20
+--batch_size 1```
+
 
 ### Notes
 
