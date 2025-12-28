@@ -4,11 +4,11 @@
 NetMedGPT is a transformer-based foundation model for network medicine that enables unified, zero-shot inference over large-scale biomedical knowledge graphs. The model learns contextualized representations of biomedical entities and relations via **masked token prediction on graph-derived sequences**.
 
 Without task-specific retraining, NetMedGPT supports multiple biomedical inference tasks, including:
-- Drug–disease indication prediction  
+- Drug–disease indication prediction
+- Drug–disease Contraindication prediction  
 - Drug–target interaction prediction  
 - Adverse drug reaction (ADR) prediction  
-- Contraindication identification  
-- Off-label use discovery 
+- Drug–disease Off-label use prediction 
 
 In addition, NetMedGPT enables **scalable drug repurposing** and **mechanistic interpretation** through context-specific subnetwork generation.
 It also includes an **interactive chatbot** that accepts free-text user queries, converts them into model-compatible pseudo-sentences, and returns ranked predictions.
@@ -45,7 +45,7 @@ Download the `data/` directory using **one** of the following options.
   <img src="https://github.com/user-attachments/assets/376ee90b-04a7-45fe-be7f-e2c42eb6ee4f" alt="Data download QR code" width="160"/>
 </p>
 
-### Option B: Command line
+#### Option B: Command line
 
 ```bash
 wget --content-disposition "https://cloud.uni-hamburg.de/s/r74Ro8rmQ2sHwsL/download?accept=zip"
@@ -59,7 +59,7 @@ After downloading, place the extracted `data/` directory in the root of the NetM
 
 ## Training and Evaluation Settings
 
-NetMedGPT is evaluated under three complementary training and evaluation strategies:
+NetMedGPT is assessed under three evaluation strategies:
 
 - **Random link split**  
 - **Zero-shot split**  
@@ -78,17 +78,17 @@ Supported disease areas:
 
 ---
 
-## Training Script Usage
+### Training
 
 The training script is executed from the command line using `train.py`.
 
 
-### Command
+#### Command
 
 python train.py [arguments]
 
 
-### Arguments
+#### Arguments
 
 - *--gpu*  
   GPU device ID  
@@ -118,15 +118,10 @@ python train.py [arguments]
   - metabolic_disorder
   - neurodigenerative
 
-### Example
+#### Example
+```
 python train.py --gpu 1 --seed 1 --inference cardiovascular
-
-
-### Notes
-
-- If *--gpu* is not specified, GPU `0` is used.
-- If *--seed* is not specified, the default seed is `1`.
-- The value of *--inference* must be one of the listed options.
+```
 
 ---
 
@@ -134,14 +129,14 @@ python train.py --gpu 1 --seed 1 --inference cardiovascular
 
 ### Drug repurposing inference
 
-Drug repurposing inference identifies and ranks candidate drugs for a given set of disease nodes.  
-The inference script is executed from the command line and produces ranked predictions with confidence scores.
+Drug repurposing inference proritizes candidate drugs for a given set of disease nodes.  
+The drug repurposing inference script is executed from the command line using `inference_drug_repurposing.py` and produces ranked predictions with confidence scores.
 
-### Command
+#### Command
 python inference_drug_repurposing.py [arguments]
 
 
-### Arguments
+#### Arguments
 
 - *--gpu*  
   GPU device ID  
@@ -149,40 +144,36 @@ python inference_drug_repurposing.py [arguments]
   **Default:** `0`
 
 - *--head_csv*  
-  Path to a CSV file containing head node indices (e.g., disease nodes)  
+  Path to a CSV file containing disease node indices  
   **Type:** string  
   **Required:** yes
 
 - *--batch_size*  
   Batch size for inference.  
-  Must be smaller than the number of provided head nodes.  
+  Must be smaller than the number of provided disease nodes.  
   **Type:** int  
-  **Default:** `3`
+  **Default:** `1`
 
 - *--N_top*  
-  Number of top-ranked tail node predictions returned per head node  
+  Number of top-ranked drug node predictions returned per disease node  
   **Type:** int  
   **Default:** `20`
 
-### Notes
+#### Note
 
-- The CSV file provided via *--head_csv* must contain valid node indices consistent with the pretrained knowledge graph.
-- Increasing *--batch_size* may improve throughput but increases GPU memory usage.
-- The output consists of ranked drug candidates with associated confidence scores.
-
-
+- The CSV file provided via *--head_csv* must contain valid node indices consistent with the knowledge graph.
 
 ### Multi-task inference
 
 Multi-task inference enables prediction across arbitrary biomedical relations supported by the knowledge graph (e.g., drug–target, drug–ADR, drug–disease, contraindications).  
 The pretrained NetMedGPT model performs inference without task-specific retraining.
 
-### Command
+#### Command
 
 python inference_multi_task.py [arguments]
 
 
-### Arguments
+#### Arguments
 
 - *--gpu*  
   GPU device ID  
@@ -220,7 +211,7 @@ python inference_multi_task.py [arguments]
   **Type:** int  
   **Default:** `1`
 
-### Example
+#### Example
 
 python inference_multi_task.py \
   --gpu 0 \
@@ -232,7 +223,7 @@ python inference_multi_task.py \
   --batch_size 1
 
 
-### Notes
+#### Notes
 
 - The values of *--head_type*, *--tail_type*, and *--relation_type* must be consistent with the schema of the underlying knowledge graph.
 - The CSV file provided via *--head_csv* must contain valid node indices.
@@ -246,12 +237,12 @@ python inference_multi_task.py \
 Subnetwork generation enables context-specific mechanistic interpretation by extracting informative subnetworks conditioned on a given query node and relation type.  
 The generated subnetworks highlight biologically and pharmacologically relevant connections learned by NetMedGPT.
 
-### Command
+#### Command
 
 python generate_subnetwork.py [arguments]
 
 
-### Arguments
+#### Arguments
 
 - *--gpu*  
   GPU device ID  
@@ -290,7 +281,7 @@ python generate_subnetwork.py [arguments]
   **Default:** `1`
 
 
-### Example
+#### Example
 python generate_subnetwork.py \
   --gpu 0 \
   --head_index 14016 \
@@ -301,7 +292,7 @@ python generate_subnetwork.py \
   --batch_size 1
 
 
-### Notes
+#### Notes
 
 - The *--head_index* must correspond to valid node indices in the knowledge graph.
 - The combination of *--head_type*, *--tail_type*, and *--relation_type* must be consistent with the graph schema.
