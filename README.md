@@ -49,8 +49,8 @@ Download the `data/` directory using **one** of the following options.
 
 ```bash
 wget --content-disposition "https://cloud.uni-hamburg.de/s/r74Ro8rmQ2sHwsL/download?accept=zip"
-unzip *.zip
-rm *.zip
+unzip data.zip
+rm data.zip
 ```
 
 After downloading, place the extracted `data/` directory in the root of the NetMedGPT repository.
