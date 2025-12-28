@@ -17,8 +17,7 @@ parser.add_argument("--head_index", required=False, default= [14016], help= "pro
 parser.add_argument("--head_type", required=False, default= "drug", help= "provide head type")
 parser.add_argument("--tail_type", required=False, default= "gene/protein", help= "provide tail type")
 parser.add_argument("--relation_type", required=False, default= "drug_protein", help= "provide the relation type")
-parser.add_argument("--N_top", required=False, default= 20, help= "provide the number of the top prediction for tail node")
-parser.add_argument("--batch_size", required=False, default= 1, help= "provide batch size: it should be less than number of the provided heads")
+parser.add_argument("--N_top", required=False, default= 5, help= "provide the number of the top prediction for tail node")
 
 args = parser.parse_args()
 device = torch.device(f'cuda:{args.gpu}' if torch.cuda.is_available() else 'cpu')
@@ -26,8 +25,8 @@ head_idx = args.head_index
 head_type = args.head_type
 tail_type = args.tail_type
 relation_type = args.relation_type
-batch_size = args.batch_size
 N_top = args.N_top
+batch_size = 1
 
 #########################
 with open("data/parameters.json", 'r') as file:
