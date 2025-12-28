@@ -84,7 +84,9 @@ The training script is executed from the command line using `train.py`.
 
 
 ### Command
-```python train.py [arguments]```
+
+python train.py [arguments]
+
 
 ### Arguments
 
@@ -117,7 +119,7 @@ The training script is executed from the command line using `train.py`.
   - neurodigenerative
 
 ### Example
-```python train.py --gpu 1 --seed 1 --inference cardiovascular```
+python train.py --gpu 1 --seed 1 --inference cardiovascular
 
 
 ### Notes
@@ -136,7 +138,7 @@ Drug repurposing inference identifies and ranks candidate drugs for a given set 
 The inference script is executed from the command line and produces ranked predictions with confidence scores.
 
 ### Command
-```python inference_drug_repurposing.py [arguments]```
+python inference_drug_repurposing.py [arguments]
 
 
 ### Arguments
@@ -170,7 +172,6 @@ The inference script is executed from the command line and produces ranked predi
 
 
 
-
 ### Multi-task inference
 
 Multi-task inference enables prediction across arbitrary biomedical relations supported by the knowledge graph (e.g., drug–target, drug–ADR, drug–disease, contraindications).  
@@ -178,7 +179,7 @@ The pretrained NetMedGPT model performs inference without task-specific retraini
 
 ### Command
 
-```python inference_multi_task.py [arguments]```
+python inference_multi_task.py [arguments]
 
 
 ### Arguments
@@ -221,7 +222,6 @@ The pretrained NetMedGPT model performs inference without task-specific retraini
 
 ### Example
 
-```bash
 python inference_multi_task.py \
   --gpu 0 \
   --head_csv data/heads.csv \
@@ -248,7 +248,7 @@ The generated subnetworks highlight biologically and pharmacologically relevant 
 
 ### Command
 
-```python generate_subnetwork.py [arguments]```
+python generate_subnetwork.py [arguments]
 
 
 ### Arguments
@@ -291,15 +291,14 @@ The generated subnetworks highlight biologically and pharmacologically relevant 
 
 
 ### Example
-```bash
-python generate_subnetwork.py
---gpu 0
---head_index 14016
---head_type drug
---tail_type gene/protein
---relation_type drug_protein
---N_top 20
---batch_size 1
+python generate_subnetwork.py \
+  --gpu 0 \
+  --head_index 14016 \
+  --head_type drug \
+  --tail_type gene/protein \
+  --relation_type drug_protein \
+  --N_top 20 \
+  --batch_size 1
 
 
 ### Notes
