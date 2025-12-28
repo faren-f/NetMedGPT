@@ -62,6 +62,7 @@ NetMedGPT is evaluated under three complementary training and evaluation strateg
 - **Random link split**
 - **Zero-shot split**
 - **Disease area split**
+
 Supported disease areas:
 - adrenal_gland  
 - anemia  
