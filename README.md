@@ -51,8 +51,44 @@ Download the `data/` directory using **one** of the following options.
 wget --content-disposition "https://cloud.uni-hamburg.de/s/r74Ro8rmQ2sHwsL/download?accept=zip"
 unzip *.zip
 rm *.zip
+```
 
-After downloading, place the extracted data/ directory inside the root of the NetMedGPT repository.
+After downloading, place the extracted `data/` directory in the root of the NetMedGPT repository.
+
+---
+
+## Training and Evaluation Settings
+
+NetMedGPT is evaluated under three complementary training and evaluation strategies:
+
+- **Random link split**  
+- **Zero-shot split**  
+- **Disease area split**
+
+Supported disease areas:
+- adrenal_gland  
+- anemia  
+- autoimmune  
+- cardiovascular  
+- cell_proliferation  
+- diabetes  
+- mental_health  
+- metabolic_disorder  
+- neurodegenerative  
+
+---
+
+## Training Script Usage
+
+The training script is executed from the command line using `train.py`.
+
+### Command
+
+
+
+
+
+
 
 
 ## Training
