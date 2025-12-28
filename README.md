@@ -82,39 +82,6 @@ Supported disease areas:
 
 The training script is executed from the command line using `train.py`.
 
-### Command
-
-
-
-
-
-
-
-
-## Training
-
-NetMedGPT is evaluated under three complementary training and evaluation strategies:
-
-- **Random link split**
-- **Zero-shot split**
-- **Disease area split**
-
-Supported disease areas:
-- adrenal_gland  
-- anemia  
-- autoimmune  
-- cardiovascular  
-- cell_proliferation  
-- diabetes  
-- mental_health  
-- metabolic_disorder  
-- neurodegenerative  
-
-
-
-## Training Script Usage
-
-The training script is executed from the command line using `train.py`.
 
 ### Command
 python train.py [arguments]
@@ -150,25 +117,34 @@ python train.py [arguments]
   - neurodigenerative
 
 ### Example
-python train.py --gpu 1 --seed 42 --inference cardiovascular
+python train.py --gpu 1 --seed 1 --inference cardiovascular
 
 
 ### Notes
 
-- If *--gpu* is not specified, GPU 0 is used.
-- If *--seed* is not specified, the default seed is 1.
+- If *--gpu* is not specified, GPU `0` is used.
+- If *--seed* is not specified, the default seed is `1`.
 - The value of *--inference* must be one of the listed options.
 
+---
+
+## Inference
+
+### Drug repurposing inference
+
+NetMedGPT produces ranked drug–disease predictions with associated confidence scores, enabling large-scale drug repurposing analyses without task-specific retraining.
+
+### Multi-task inference
+
+The pretrained model can be directly applied to all supported tasks, including drug–target prediction, ADR prediction, contraindication detection, and off-label use discovery.
+
+---
+
+## Subnetwork Generation
+
+NetMedGPT supports context-specific subnetwork extraction for mechanistic interpretation. Given a query entity or task, the model generates informative subnetworks that highlight relevant biological and pharmacological pathways.
 
 
-## inference for drug repurposing
-gives confidence score
-
-
-## inference for all tasks
-
-
-## subnetwork generation
 
 
 
