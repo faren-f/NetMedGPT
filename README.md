@@ -178,7 +178,7 @@ The pretrained NetMedGPT model performs inference without task-specific retraini
 
 ### Command
 
-python inference_multi_task.py [arguments]
+```python inference_multi_task.py [arguments]```
 
 
 ### Arguments
@@ -220,14 +220,17 @@ python inference_multi_task.py [arguments]
   **Default:** `1`
 
 ### Example
-```python inference_multi_task.py
---gpu 0
---head_csv data/heads.csv
---head_type drug
---tail_type gene/protein
---relation_type drug_protein
---N_top 20
---batch_size 1```
+
+```bash
+python inference_multi_task.py \
+  --gpu 0 \
+  --head_csv data/heads.csv \
+  --head_type drug \
+  --tail_type gene/protein \
+  --relation_type drug_protein \
+  --N_top 20 \
+  --batch_size 1
+
 
 ### Notes
 
@@ -288,14 +291,15 @@ The generated subnetworks highlight biologically and pharmacologically relevant 
 
 
 ### Example
-```python generate_subnetwork.py
+```bash
+python generate_subnetwork.py
 --gpu 0
 --head_index 14016
 --head_type drug
 --tail_type gene/protein
 --relation_type drug_protein
 --N_top 20
---batch_size 1```
+--batch_size 1
 
 
 ### Notes
