@@ -284,8 +284,7 @@ python generate_subnetwork.py \
   --head_type drug \
   --tail_type gene/protein \
   --relation_type drug_protein \
-  --N_top 20 \
-  --batch_size 1
+  --N_top 5
 ```
 
 #### Notes
