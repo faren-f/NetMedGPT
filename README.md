@@ -132,19 +132,156 @@ python train.py --gpu 1 --seed 1 --inference cardiovascular
 
 ### Drug repurposing inference
 
-NetMedGPT produces ranked drug–disease predictions with associated confidence scores, enabling large-scale drug repurposing analyses without task-specific retraining.
+Drug repurposing inference identifies and ranks candidate drugs for a given set of disease nodes.  
+The inference script is executed from the command line and produces ranked predictions with confidence scores.
+
+### Command
+python inference_drug_repurposing.py [arguments]
+
+
+### Arguments
+
+- *--gpu*  
+  GPU device ID  
+  **Type:** int  
+  **Default:** `0`
+
+- *--head_csv*  
+  Path to a CSV file containing head node indices (e.g., disease nodes)  
+  **Type:** string  
+  **Required:** yes
+
+- *--batch_size*  
+  Batch size for inference.  
+  Must be smaller than the number of provided head nodes.  
+  **Type:** int  
+  **Default:** `3`
+
+- *--N_top*  
+  Number of top-ranked tail node predictions returned per head node  
+  **Type:** int  
+  **Default:** `20`
+
+### Notes
+
+- The CSV file provided via *--head_csv* must contain valid node indices consistent with the pretrained knowledge graph.
+- Increasing *--batch_size* may improve throughput but increases GPU memory usage.
+- The output consists of ranked drug candidates with associated confidence scores.
+
+
+
 
 ### Multi-task inference
 
-The pretrained model can be directly applied to all supported tasks, including drug–target prediction, ADR prediction, contraindication detection, and off-label use discovery.
+Multi-task inference enables prediction across arbitrary biomedical relations supported by the knowledge graph (e.g., drug–target, drug–ADR, drug–disease, contraindications).  
+The pretrained NetMedGPT model performs inference without task-specific retraining.
+
+### Command
+
+python inference_multi_task.py [arguments]
+
+
+### Arguments
+
+- *--gpu*  
+  GPU device ID  
+  **Type:** int  
+  **Default:** `0`
+
+- *--head_csv*  
+  Path to a CSV file containing head node indices  
+  **Type:** string  
+  **Required:** yes
+
+- *--head_type*  
+  Type of the head nodes  
+  **Type:** string  
+  **Default:** `drug`
+
+- *--tail_type*  
+  Type of the target (tail) nodes to be predicted  
+  **Type:** string  
+  **Default:** `gene/protein`
+
+- *--relation_type*  
+  Relation type to be inferred between head and tail nodes  
+  **Type:** string  
+  **Default:** `drug_protein`
+
+- *--N_top*  
+  Number of top-ranked tail node predictions returned per head node  
+  **Type:** int  
+  **Default:** `20`
+
+- *--batch_size*  
+  Batch size for inference.  
+  Must be smaller than the number of provided head nodes.  
+  **Type:** int  
+  **Default:** `1`
+
+### Notes
+
+- The values of *--head_type*, *--tail_type*, and *--relation_type* must be consistent with the schema of the underlying knowledge graph.
+- The CSV file provided via *--head_csv* must contain valid node indices.
+- Larger batch sizes improve throughput but increase GPU memory usage.
+- The output consists of ranked tail node predictions with associated confidence scores.
 
 ---
 
 ## Subnetwork Generation
 
-NetMedGPT supports context-specific subnetwork extraction for mechanistic interpretation. Given a query entity or task, the model generates informative subnetworks that highlight relevant biological and pharmacological pathways.
+Subnetwork generation enables context-specific mechanistic interpretation by extracting informative subnetworks conditioned on a given query node and relation type.  
+The generated subnetworks highlight biologically and pharmacologically relevant connections learned by NetMedGPT.
+
+### Command
+
+python generate_subnetwork.py [arguments]
 
 
+### Arguments
+
+- *--gpu*  
+  GPU device ID  
+  **Type:** int  
+  **Default:** `0`
+
+- *--head_index*  
+  Node index (or list of node indices) of the head entity  
+  **Type:** int or list of int  
+  **Default:** `[14016]`
+
+- *--head_type*  
+  Type of the head node  
+  **Type:** string  
+  **Default:** `drug`
+
+- *--tail_type*  
+  Type of the target (tail) nodes used to construct the subnetwork  
+  **Type:** string  
+  **Default:** `gene/protein`
+
+- *--relation_type*  
+  Relation type guiding subnetwork extraction  
+  **Type:** string  
+  **Default:** `drug_protein`
+
+- *--N_top*  
+  Number of top-ranked tail nodes used to build the subnetwork  
+  **Type:** int  
+  **Default:** `20`
+
+- *--batch_size*  
+  Batch size for subnetwork generation.  
+  Must be smaller than the number of provided head nodes.  
+  **Type:** int  
+  **Default:** `1`
+
+### Notes
+
+- The *--head_index* must correspond to valid node indices in the knowledge graph.
+- The combination of *--head_type*, *--tail_type*, and *--relation_type* must be consistent with the graph schema.
+- Increasing *--N_top* produces larger subnetworks and may increase runtime and memory usage.
+- The output subnetwork can be used for downstream visualization and mechanistic analysis.
 
 
 
