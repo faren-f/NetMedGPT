@@ -165,8 +165,9 @@ python inference_drug_repurposing.py [arguments]
 
 ### Multi-task inference
 
-Multi-task inference enables prediction across arbitrary biomedical relations supported by the knowledge graph (e.g., drug–target, drug–ADR, drug–disease, contraindications).  
-The pretrained NetMedGPT model performs inference without task-specific retraining.
+Multi-task inference enables prediction across various biomedical relations supported by the knowledge graph (e.g., indication, drug–target, drug–ADR, drug–disease, contraindications).  
+The multi-task inference script is executed from the command line using `inference_multi_task.py` and produces ranked predictions for tail nodes.
+
 
 #### Command
 
@@ -191,12 +192,12 @@ python inference_multi_task.py [arguments]
   **Default:** `drug`
 
 - *--tail_type*  
-  Type of the target (tail) nodes to be predicted  
+  Type of the tail nodes to be predicted  
   **Type:** string  
   **Default:** `gene/protein`
 
 - *--relation_type*  
-  Relation type to be inferred between head and tail nodes  
+  Relation type between head and tail nodes  
   **Type:** string  
   **Default:** `drug_protein`
 
@@ -212,7 +213,7 @@ python inference_multi_task.py [arguments]
   **Default:** `1`
 
 #### Example
-
+```
 python inference_multi_task.py \
   --gpu 0 \
   --head_csv data/heads.csv \
@@ -221,14 +222,12 @@ python inference_multi_task.py \
   --relation_type drug_protein \
   --N_top 20 \
   --batch_size 1
-
+```
 
 #### Notes
 
-- The values of *--head_type*, *--tail_type*, and *--relation_type* must be consistent with the schema of the underlying knowledge graph.
+- The values of *--head_type*, *--tail_type*, and *--relation_type* must be consistent with the knowledge graph.
 - The CSV file provided via *--head_csv* must contain valid node indices.
-- Larger batch sizes improve throughput but increase GPU memory usage.
-- The output consists of ranked tail node predictions with associated confidence scores.
 
 ---
 
@@ -236,10 +235,12 @@ python inference_multi_task.py \
 
 Subnetwork generation enables context-specific mechanistic interpretation by extracting informative subnetworks conditioned on a given query node and relation type.  
 The generated subnetworks highlight biologically and pharmacologically relevant connections learned by NetMedGPT.
+The subnetwork generation script is executed from the command line using `subnetwork_generator.py`. 
+
 
 #### Command
 
-python generate_subnetwork.py [arguments]
+python subnetwork_generator.py [arguments]
 
 
 #### Arguments
@@ -250,7 +251,7 @@ python generate_subnetwork.py [arguments]
   **Default:** `0`
 
 - *--head_index*  
-  Node index (or list of node indices) of the head entity  
+  Node index of the head entity  
   **Type:** int or list of int  
   **Default:** `[14016]`
 
@@ -260,7 +261,7 @@ python generate_subnetwork.py [arguments]
   **Default:** `drug`
 
 - *--tail_type*  
-  Type of the target (tail) nodes used to construct the subnetwork  
+  Type of the tail nodes used to construct the subnetwork  
   **Type:** string  
   **Default:** `gene/protein`
 
@@ -272,16 +273,11 @@ python generate_subnetwork.py [arguments]
 - *--N_top*  
   Number of top-ranked tail nodes used to build the subnetwork  
   **Type:** int  
-  **Default:** `20`
-
-- *--batch_size*  
-  Batch size for subnetwork generation.  
-  Must be smaller than the number of provided head nodes.  
-  **Type:** int  
-  **Default:** `1`
+  **Default:** `5`
 
 
 #### Example
+```
 python generate_subnetwork.py \
   --gpu 0 \
   --head_index 14016 \
@@ -290,13 +286,11 @@ python generate_subnetwork.py \
   --relation_type drug_protein \
   --N_top 20 \
   --batch_size 1
-
+```
 
 #### Notes
-
 - The *--head_index* must correspond to valid node indices in the knowledge graph.
-- The combination of *--head_type*, *--tail_type*, and *--relation_type* must be consistent with the graph schema.
-- Increasing *--N_top* produces larger subnetworks and may increase runtime and memory usage.
+- The combination of *--head_type*, *--tail_type*, and *--relation_type* must be consistent with the knowledge graph.
 - The output subnetwork can be used for downstream visualization and mechanistic analysis.
 
 
