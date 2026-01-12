@@ -292,11 +292,18 @@ python generate_subnetwork.py \
 - The combination of *--head_type*, *--tail_type*, and *--relation_type* must be consistent with the knowledge graph.
 - The output subnetwork can be used for downstream visualization and mechanistic analysis.
 
+#### Citation
+If you use  **NetMedGPT** in your research, please cite our work:
 
+Firoozbakht, F. et al. NetMedGPT - A network medicine foundation model for extensive disease mechanism mining and drug repurposing. bioRxiv (2026) doi:10.64898/2026.01.04.697552.
 
-
-
-
-
-
-
+```
+@article{NetMedGPT,
+  author  = {Firoozbakht, Farzaneh and Suwer, Simon and Elkjaer, Maria Louise and Handy, Diane E. and Maier, Andreas and Li, Jane and Lancashire, Lee and Loscalzo, Josep and Baumbach, Jan},
+  title   = {NetMedGPT - A Network Medicine Foundation Model for Extensive Disease Mechanism Mining and Drug Repurposing},
+  journal = {bioRxiv},
+  year    = {2026},
+  month   = {01},
+  doi     = {10.64898/2026.01.04.697552},
+}
+```
