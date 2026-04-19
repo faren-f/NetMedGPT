@@ -48,7 +48,7 @@ Download the `data/` directory using **one** of the following options.
 #### Option B: Command line
 
 ```bash
-wget --content-disposition "https://cloud.uni-hamburg.de/s/r74Ro8rmQ2sHwsL/download?accept=zip"
+wget --content-disposition "https://cloud.uni-hamburg.de/s/PpYfeeff3BQpoLA/download?accept=zip"
 unzip data.zip
 rm data.zip
 ```
