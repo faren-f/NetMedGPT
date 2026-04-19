@@ -41,9 +41,7 @@ Download the `data/` directory using **one** of the following options.
 
 #### Option A: QR code
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/376ee90b-04a7-45fe-be7f-e2c42eb6ee4f" alt="Data download QR code" width="160"/>
-</p>
+<img width="164" height="164" alt="download" src="https://github.com/user-attachments/assets/102ebeaa-c495-4606-a4e3-ba0450c98113" />
 
 #### Option B: Command line
 
