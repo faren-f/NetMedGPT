@@ -21,3 +21,4 @@ MetaPath2Vec/Result
 __pycache__/
 .DS_Store
 .Rhistory
+tmp/

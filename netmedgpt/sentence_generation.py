@@ -17,7 +17,6 @@ def sentence_generation(edge_index, nodes, queried_node_types, queried_edge_type
     test_data_edge_label = torch.tensor([], dtype=torch.long)
     edge_type_flag_test = torch.tensor([], dtype=torch.long)
     
-    to_remove_pretrain = []
     for r, (i, (node_source1, node_source2)) in enumerate(queried_dict.items()):
         set_seed(seed)  
         print(f"relation: {r}")
@@ -64,16 +63,7 @@ def sentence_generation(edge_index, nodes, queried_node_types, queried_edge_type
     
         edge_type_flag_val = torch.cat((edge_type_flag_val, edge_type_flag_val_i), dim = 0)
         edge_type_flag_test = torch.cat((edge_type_flag_test, edge_type_flag_test_i), dim = 0)
-    
-        reversed_positive_edges_val = positive_edges_val.flip(0)
-        reversed_positive_edges_test = positive_edges_test.flip(0)
-    
-        positive_edges_2sided_val = torch.cat([positive_edges_val, reversed_positive_edges_val], dim=1)
-        positive_edges_2sided_test = torch.cat([positive_edges_test, reversed_positive_edges_test], dim=1)
-        positive_edges_val_test = torch.cat([positive_edges_2sided_val, positive_edges_2sided_test], dim=1)
-    
-        to_remove_pretrain.extend([f'{x}|{y}' for x,y in positive_edges_val_test.T])
-    
+                
     ########################################
     train_edge_index_df = train_txgnn[['x_index', 'y_index']]
     

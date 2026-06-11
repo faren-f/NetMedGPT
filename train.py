@@ -12,25 +12,61 @@ from torch.utils.data import TensorDataset, DataLoader
 from torch.cuda.amp import autocast, GradScaler
 from torch.optim.lr_scheduler import LambdaLR
 import argparse
-from netmedgpt.utilities import link_pred_val, node_level_eval, sim 
+from sklearn.metrics import f1_score, precision_recall_curve
+from netmedgpt.utilities import link_pred_val, node_level_eval, sim
 from netmedgpt.model import TransformerModel, create_mask, lr_lambda
 from netmedgpt.prepare_txgnn_splits import prepare_txgnn_data
 from netmedgpt.sentence_generation import sentence_generation
 import warnings
 warnings.filterwarnings("ignore")
 
+
+def optimal_thresholds(pred, labels, edge_type_flag, edge_flags):
+    """Return the threshold that maximises F1 on pred/labels for each edge type."""
+    thresholds = []
+    for flag in edge_flags:
+        mask = (edge_type_flag == flag)
+        y_true = labels[mask].numpy()
+        y_scores = pred[mask].numpy()
+        prec, rec, thresh = precision_recall_curve(y_true, y_scores)
+        denom = prec + rec
+        f1_arr = np.where(denom > 0, 2 * prec * rec / denom, 0.0)
+        # thresh has one fewer element than prec/rec; last prec/rec point is trivial
+        best_idx = np.argmax(f1_arr[:-1]) if len(thresh) > 0 else 0
+        thresholds.append(float(thresh[best_idx]) if len(thresh) > 0 else 0.5)
+    return thresholds
+
+
+def f1_per_edge_type(pred, labels, edge_type_flag, edge_flags, thresholds=None):
+    """Compute F1 per edge type using per-edge-type thresholds.
+
+    If thresholds is None the optimal threshold is derived from pred/labels
+    directly (use for val set). Pass val-set thresholds when evaluating the
+    test set so the threshold is not fit on the test labels.
+    """
+    if thresholds is None:
+        thresholds = optimal_thresholds(pred, labels, edge_type_flag, edge_flags)
+    result = []
+    for flag, thr in zip(edge_flags, thresholds):
+        mask = (edge_type_flag == flag)
+        y_true = labels[mask].numpy()
+        y_pred = (pred[mask].numpy() >= thr).astype(int)
+        result.append(f1_score(y_true, y_pred, zero_division=0))
+    return result, thresholds
+
+
 ####### arg parser
 parser = argparse.ArgumentParser()
 parser.add_argument("--gpu", required=False, default= 0, help="GPU device ID")
 parser.add_argument("--seed", required=False, default= 1, help="Random seed")
-parser.add_argument("--inference", required=False, default= "random_link_split", help="please select among: random_link_split, zero_shot_split, adrenal_gland, anemia, autoimmune, cardiovascular, cell_proliferation, diabetes, mental_health, metabolic_disorder, neurodigenerative")
+parser.add_argument("--inference", required=False, default= "random_link_split", help="please select among: random_link_split, zero_shot_split, rare_disease, adrenal_gland, anemia, autoimmune, cardiovascular, cell_proliferation, diabetes, mental_health, metabolic_disorder, neurodigenerative")
 
 args = parser.parse_args()
 device = torch.device(f'cuda:{args.gpu}' if torch.cuda.is_available() else 'cpu')
-seed = args.seed
+seed = int(args.seed)
 inference = args.inference
 
-Epoch = 1#100
+Epoch = 100
 patience_limit = 10
 with open("data/parameters.json", 'r') as file:
     all_param = json.load(file)
@@ -38,7 +74,7 @@ with open("data/parameters.json", 'r') as file:
 data_dir = all_param['files']['data_dir']
 best_hyperparam = all_param['best_hyperparam']
 
-os.makedirs(os.path.join(all_param['files']['data_dir'], 'result'), exist_ok = True) 
+os.makedirs(os.path.join(all_param['files']['data_dir'], 'result'), exist_ok = True)
 result_dir = os.path.join(all_param['files']['data_dir'], 'result')
 
 os.makedirs(os.path.join(all_param['files']['data_dir'], "model_checkpoints/saved_models_evaluation"), exist_ok=True)
@@ -46,7 +82,7 @@ model_dir = os.path.join(all_param['files']['data_dir'], 'model_checkpoints/save
 
 ############################################################################################################################
 nodes = pd.read_csv(os.path.join(data_dir, 'KG/nodes.csv'), sep= ',')
-edge = pd.read_csv(os.path.join(data_dir, "KG/edges.csv")) 
+edge = pd.read_csv(os.path.join(data_dir, "KG/edges.csv"))
 feat = torch.load(os.path.join(data_dir, "KG/embeddings.pt"))
 
 #######################################################################################################################
@@ -58,7 +94,7 @@ if inference == "random_link_split":
     train_txgnn = pd.read_csv(f"data/TxGNN_splits/random_{seed}/train.csv")
     val_txgnn = pd.read_csv(f"data/TxGNN_splits/random_{seed}/valid.csv")
     test_txgnn = pd.read_csv(f"data/TxGNN_splits/random_{seed}/test.csv")
-    
+
 elif inference == "zero_shot_split":
     queried_edge_types = ['indication', 'contraindication']
     queried_node_types = ['disease|drug', 'disease|drug']
@@ -67,6 +103,15 @@ elif inference == "zero_shot_split":
     train_txgnn = pd.read_csv(f"data/TxGNN_splits/complex_disease_{seed}/train.csv")
     val_txgnn = pd.read_csv(f"data/TxGNN_splits/complex_disease_{seed}/valid.csv")
     test_txgnn = pd.read_csv(f"data/TxGNN_splits/complex_disease_{seed}/test.csv")
+
+elif inference == "rare_disease":
+    queried_edge_types = ['indication', 'contraindication', 'off-label use']
+    queried_node_types = ['disease|drug', 'disease|drug', 'disease|drug']
+    edge_flags_val = [1, 2, 3]
+    edge_flags_test = [1, 2, 3]
+    train_txgnn = pd.read_csv(f"data/TxGNN_splits/rare_disease_{seed}/train.csv", low_memory=False)
+    val_txgnn   = pd.read_csv(f"data/TxGNN_splits/rare_disease_{seed}/valid.csv", low_memory=False)
+    test_txgnn  = pd.read_csv(f"data/TxGNN_splits/rare_disease_{seed}/test.csv",  low_memory=False)
 
 else:
     area = inference
@@ -100,21 +145,21 @@ else:
             nodes.loc[nodes['node_type'] == 'effect/phenotype', 'node_index'].unique(), dtype=torch.int64
         )
     }
-    
-    
+
+
     node_type_to_z = edge.groupby('node_types')['z_index'].unique().to_dict()
-    
+
     all_ids_node2 = {}
     for z in node_type_to_z.get('disease|drug', []):
         all_ids_node2[z] = all_ids['drug']
-    
+
     for z in node_type_to_z.get('drug|gene/protein', []):
         all_ids_node2[z] = all_ids['gene']
-    
+
     for z in node_type_to_z.get('drug|effect/phenotype', []):
         all_ids_node2[z] = all_ids['phenotype']
-    
-    
+
+
 mask_token = edge['z_index'].max() +1
 vocab_size = mask_token + 1
 
@@ -140,10 +185,10 @@ test_data_edge_label = data['test_data_edge_label']
 test_data_edge_label_index = data['test_data_edge_label_index_with_relation']
 edge_type_flag_test = data['edge_type_flag_test']
 
-log_name = f"netmedgpt_{inference}_{seed}" 
+log_name = f"netmedgpt_{inference}_{seed}"
 
 model_save_path = f"{model_dir}/{log_name}.pt"
-seq_len = (all_param['node2vec']['walk_length']*2)-1   
+seq_len = (all_param['node2vec']['walk_length']*2)-1
 
 dataset = TensorDataset(node2vec_walks)
 dataloader = DataLoader(dataset, batch_size=best_hyperparam['batch_size'], shuffle=True)
@@ -153,7 +198,7 @@ model = TransformerModel(
     best_hyperparam['hidden_channels'],
     best_hyperparam['nhead'],
     best_hyperparam['N_encoder_layers'],
-    (all_param['node2vec']['walk_length']*2)-1, 
+    (all_param['node2vec']['walk_length']*2)-1,
     device=device,
     feat = feat,
     nodes = nodes,
@@ -164,7 +209,7 @@ model = TransformerModel(
 
 optimizer = optim.Adam(model.parameters(), lr=best_hyperparam['learning_rate'])
 scaler = GradScaler()
-warmup_steps = int(0.1 * Epoch * len(dataloader))  
+warmup_steps = int(0.1 * Epoch * len(dataloader))
 total_steps = Epoch * len(dataloader)
 scheduler = LambdaLR(optimizer, lr_lambda=lambda step: lr_lambda(step, warmup_steps, total_steps))
 
@@ -180,11 +225,11 @@ for epoch in range(Epoch):
         optimizer.zero_grad()
         input_batch = batch[0].to(device)
         masked_input, mask = create_mask(input_batch, vocab_size, mask_token_id=mask_token)
-    
+
         with autocast():
             output = model(masked_input)
             loss = criterion(output[mask], input_batch[mask])
-            
+
         scaler.scale(loss).backward()
         scaler.step(optimizer)
         scaler.update()
@@ -196,11 +241,12 @@ for epoch in range(Epoch):
     pred_val = sim(val_data_edge_label_index, model, batch_size=best_hyperparam['batch_size'], method='prob', device=device, mask_token=mask_token, seq_len=seq_len)
     pred_val = torch.tensor(pred_val, dtype=torch.float32)
     LP_result_val = link_pred_val(pred_val, val_data_edge_label, edge_type_flag_val, all_param, edge_type = edge_flags_val)
+    f1_val, val_thresholds = f1_per_edge_type(pred_val, val_data_edge_label, edge_type_flag_val, edge_flags_val)
     hit_k_val, precision_k_val = node_level_eval(val_data_edge_label_index, val_data_edge_label, all_ids_node2, model, device=device, mask_token=mask_token, seq_len=seq_len)
 
     auprc = np.array(LP_result_val['auprc']).mean()
     print(auprc)
-    
+
     if (auprc > best_auprc):
         best_auprc = auprc
         best_model_state = model.state_dict()
@@ -216,12 +262,13 @@ for epoch in range(Epoch):
 
     pred_test = sim(test_data_edge_label_index, model, batch_size=best_hyperparam['batch_size'], method='prob', device=device, mask_token=mask_token, seq_len=seq_len)
     pred_test = torch.tensor(pred_test, dtype=torch.float32)
-    
+
     LP_result_test = link_pred_val(pred_test, test_data_edge_label, edge_type_flag_test, all_param, edge_type=edge_flags_test)
+    f1_test, _ = f1_per_edge_type(pred_test, test_data_edge_label, edge_type_flag_test, edge_flags_test, thresholds=val_thresholds)
     hit_k_test, precision_k_test = node_level_eval(test_data_edge_label_index, test_data_edge_label, all_ids_node2, model, device=device, mask_token=mask_token, seq_len=seq_len)
 
     if (patience_counter >= patience_limit):
-            break    
+            break
 
 if best_model_state:
     ckpt = {
@@ -238,10 +285,11 @@ if best_model_state:
         "vocab_size": vocab_size,
     }
     torch.save(ckpt, model_save_path)
-    
+
 # Save final val result
 columns = ['auc', 'auprc']
 LP_result_val_df = pd.DataFrame(LP_result_val, columns=columns)
+LP_result_val_df['f1'] = f1_val
 LP_result_val_df.index = queried_edge_types
 LP_result_val_df['seed'] = seed
 
@@ -252,8 +300,9 @@ precision_val.index = queried_edge_types
 hit_precision_val = pd.concat([hit_val, precision_val], axis=1)
 hit_precision_val['seed'] = seed
 
-# save final test result 
+# save final test result
 LP_result_test_df = pd.DataFrame(LP_result_test, columns=columns)
+LP_result_test_df['f1'] = f1_test
 LP_result_test_df.index = queried_edge_types
 LP_result_test_df['seed'] = seed
 
@@ -272,5 +321,4 @@ os.makedirs(config_dir, exist_ok=True)
 LP_result_val_df.to_csv(os.path.join(config_dir, f"LP_val.csv"), index=True)
 hit_precision_val.to_csv(os.path.join(config_dir, f"hit_precision_val.csv"), index=True)
 LP_result_test_df.to_csv(os.path.join(config_dir, f"LP_test.csv"), index=True)
-hit_precision_test.to_csv(os.path.join(config_dir, f"hit_precision_test.csv"), index=True)  
-
+hit_precision_test.to_csv(os.path.join(config_dir, f"hit_precision_test.csv"), index=True)
