@@ -314,7 +314,7 @@ precision_test.index = queried_edge_types
 hit_precision_test = pd.concat([hit_test, precision_test], axis=1)
 hit_precision_test['seed'] = seed
 
-config_dir = os.path.join(result_dir, f"netmedgpt_{inference}")
+config_dir = os.path.join(result_dir, f"netmedgpt_{inference}_seed{seed}")
 
 os.makedirs(config_dir, exist_ok=True)
 
