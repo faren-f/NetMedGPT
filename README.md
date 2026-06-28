@@ -33,7 +33,6 @@ cd NetMedGPT
 ```bash
 conda env create -f environment.yml
 conda activate netmedgpt
-pip install -r requirements.txt
 pip install -e . --no-deps
 ```
 

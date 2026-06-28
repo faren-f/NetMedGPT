@@ -2,33 +2,19 @@ name: netmedgpt
 channels:
   - pytorch
   - nvidia
-  - pyg
   - conda-forge
   - defaults
 
 dependencies:
   - python=3.10
   - pip
+  - conda-forge::jupyterlab=4.0.7
 
   # ---- PyTorch (CUDA 11.8) via conda ----
   - pytorch::pytorch=2.2.0=py3.10_cuda11.8_cudnn8.7.0_0
   - pytorch::torchaudio=2.2.0=py310_cu118
   - pytorch::torchvision=0.17.0=py310_cu118
   - pytorch::pytorch-cuda=11.8
-
-  # ---- Core dependencies via conda ----
-  - conda-forge::jupyterlab=4.0.7
-  - conda-forge::numpy=1.24.3
-  - conda-forge::pandas=2.2.3
-  - conda-forge::scikit-learn=1.6.1
-  - conda-forge::scipy=1.15.3
-  - conda-forge::networkx=3.4.2
-  - conda-forge::matplotlib=3.10.3
-  - conda-forge::tqdm=4.67.1
-  - conda-forge::pyyaml=6.0.2
-  - conda-forge::requests=2.32.4
-  - conda-forge::ipykernel=6.29.5
-  - conda-forge::ipywidgets=8.1.7
 
   - pip:
     # ---- PyG extensions (CUDA 11.8) ----
@@ -40,10 +26,23 @@ dependencies:
     - torch-spline-conv
     - torch-geometric==2.6.1
 
-    # ---- Remaining pip-only packages ----
+    # ---- Scientific Python ----
+    - numpy==1.24.3
+    - scipy==1.15.3
+    - pandas==2.2.3
+    - scikit-learn==1.6.1
+    - matplotlib==3.10.3
+    - networkx==3.4.2
+
+    # ---- Other dependencies ----
+    - tqdm==4.67.1
+    - pyyaml==6.0.2
+    - requests==2.32.4
     - protobuf==6.31.1
     - ray==2.47.1
     - tensorboardx==2.6.4
     - pyarrow==16.1.0
+    - ipykernel==6.29.5
+    - ipywidgets==8.1.7
     - widgetsnbextension==4.0.14
     - jupyterlab-widgets==3.0.15
