@@ -17,8 +17,15 @@ from netmedgpt.utilities import link_pred_val, node_level_eval, sim
 from netmedgpt.model import TransformerModel, create_mask, lr_lambda
 from netmedgpt.prepare_txgnn_splits import prepare_txgnn_data
 from netmedgpt.sentence_generation import sentence_generation
+from config import set_seed, worker_init_fn, print_reproducibility_settings
 import warnings
 warnings.filterwarnings("ignore")
+
+
+'''
+for seed in 1 2 3 4 5; do python train.py --gpu 2 --seed $seed --inference rare_disease;   done
+
+'''
 
 
 def optimal_thresholds(pred, labels, edge_type_flag, edge_flags):
@@ -65,6 +72,9 @@ args = parser.parse_args()
 device = torch.device(f'cuda:{args.gpu}' if torch.cuda.is_available() else 'cpu')
 seed = int(args.seed)
 inference = args.inference
+
+set_seed(seed)
+print_reproducibility_settings(seed)
 
 Epoch = 100
 patience_limit = 10
@@ -191,7 +201,7 @@ model_save_path = f"{model_dir}/{log_name}.pt"
 seq_len = (all_param['node2vec']['walk_length']*2)-1
 
 dataset = TensorDataset(node2vec_walks)
-dataloader = DataLoader(dataset, batch_size=best_hyperparam['batch_size'], shuffle=True)
+dataloader = DataLoader(dataset, batch_size=best_hyperparam['batch_size'], shuffle=True, worker_init_fn=worker_init_fn)
 
 model = TransformerModel(
     vocab_size,

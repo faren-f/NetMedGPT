@@ -151,9 +151,12 @@ def sentence_generation(edge_index, nodes, queried_node_types, queried_edge_type
         
 def set_seed(seed):
     torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
     random.seed(seed)
     np.random.seed(seed)
-    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark     = False
 
 def negative_samples(pos_edges, all_edges, all_drugs, seed=42):
     np.random.seed(seed)

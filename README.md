@@ -10,7 +10,7 @@ Without task-specific retraining, NetMedGPT supports multiple biomedical inferen
 - Adverse drug reaction (ADR) prediction  
 - Drug–disease Off-label use prediction 
 
-In addition, NetMedGPT enables **scalable drug repurposing** and **mechanistic interpretation** through context-specific subnetwork generation.
+In addition, NetMedGPT enables **scalable drug repurposing** and **generation of biologically plausible subnetworks**.
 It also includes an **interactive chatbot** that accepts free-text user queries, converts them into model-compatible pseudo-sentences, and returns ranked predictions.
 
 <img width="2539" height="3235" alt="figure1_NetMedGPT_overview" src="https://github.com/user-attachments/assets/8c863158-8438-4862-a941-6b0b12a330ed" />
@@ -21,12 +21,24 @@ It also includes an **interactive chatbot** that accepts free-text user queries,
 
 ### 1. Environment setup
 
-Clone the repository and create a conda environment:
+Clone the repository:
 
 ```bash
 git clone https://github.com/faren-f/NetMedGPT.git
 cd NetMedGPT
+```
 
+#### Option A: conda
+
+```bash
+conda env create -f environment.yml
+conda activate netmedgpt
+pip install -e .
+```
+
+#### Option B: pip
+
+```bash
 conda create -n netmedgpt python=3.10
 conda activate netmedgpt
 
@@ -59,9 +71,26 @@ After downloading, place the extracted `data/` directory in the root of the NetM
 
 NetMedGPT is assessed under three evaluation strategies:
 
-- **Random link split**  
-- **Zero-shot split**  
-- **Disease area split**
+- **Random link split** — edges are randomly partitioned into train/val/test sets. Used for the main benchmarks across 5 random seeds.
+- **Zero-shot split** — diseases in the test set are held out entirely from training, so the model never sees any drug-disease edge involving those diseases during training.
+- **Disease area split** — all edges belonging to a specific disease area (e.g., cardiovascular) are held out as the test set, while all remaining edges are used for training.
+
+For the random link split and zero-shot split, edges (or disease nodes) are partitioned into **90% train / 5% validation / 5% test**, following the original [TxGNN](https://github.com/mims-harvard/TxGNN) splits exactly to ensure a fair comparison with baseline methods. For the disease-area split, all drug–disease links belonging to a given disease area are removed entirely from training and validation and used exclusively for testing.
+
+### Reproducibility
+
+All random seeds and determinism settings are centralized in `config.py`. The following settings are applied automatically at startup when running `train.py`:
+
+| Setting | Value | Description |
+|---|---|---|
+| `seed` | CLI `--seed` arg | Controls all random number generators |
+| `cudnn.deterministic` | `True` | Forces cuDNN to use deterministic algorithms |
+| `cudnn.benchmark` | `False` | Disables cuDNN auto-tuning for reproducibility |
+| DataLoader worker seed | derived from `seed` | Ensures deterministic data loading |
+
+### Data leakage prevention
+
+Node2vec random walks — which form the training sequences — are generated **exclusively on training edges**. Val and test edges are fully excluded from walk generation and are only used at evaluation time. Negative samples for val/test are drawn from the full KG but filtered to exclude all known positive edges, preventing false negatives.
 
 Supported disease areas:
 - adrenal_gland  
@@ -120,6 +149,10 @@ python train.py [arguments]
 ```
 python train.py --gpu 1 --seed 1 --inference cardiovascular
 ```
+
+#### Output
+
+Model checkpoints are saved to `data/model_checkpoints/` during training and can be reloaded for inference and post-hoc analysis.
 
 ---
 
@@ -231,7 +264,7 @@ python inference_multi_task.py \
 
 ## Subnetwork Generation
 
-Subnetwork generation enables context-specific mechanistic interpretation by extracting informative subnetworks conditioned on a given query node and relation type.  
+Subnetwork generation enables context-specific interpretation by extracting informative subnetworks conditioned on a given query node and relation type.  
 The generated subnetworks highlight biologically and pharmacologically relevant connections learned by NetMedGPT.
 The subnetwork generation script is executed from the command line using `subnetwork_generator.py`. 
 
