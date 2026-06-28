@@ -49,7 +49,7 @@ parser.add_argument("--lp_threshold",   required=False, default=0.8,  type=float
 
 args = parser.parse_args()
 
-SEED           = 42
+SEED           = 1
 TEMPERATURE    = args.temperature
 N_METAPATH     = args.N_metapath
 FREQ_THRESHOLD = args.freq_threshold
