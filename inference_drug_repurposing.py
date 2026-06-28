@@ -29,6 +29,7 @@ with open("data/parameters.json", 'r') as file:
 model_dir = os.path.join(all_param['files']['data_dir'], 'model_checkpoints')
 data_dir = all_param['files']['data_dir']
 user_response = os.path.join(all_param['files']['data_dir'], 'user_response')
+os.makedirs(user_response, exist_ok=True)
 checkpoint_path_netmedgpt = os.path.join(model_dir, "netmedgpt.pt")
 checkpoint_path_LP_indication = os.path.join(model_dir, "netmedgpt_LP_indication.pt")
 

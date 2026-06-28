@@ -158,6 +158,8 @@ Model checkpoints are saved to `data/model_checkpoints/` during training and can
 
 ## Inference
 
+> **Note:** Inference scripts require a trained model checkpoint. Place the checkpoint folder inside `data/model_checkpoints/` before running any inference script.
+
 ### Drug repurposing inference
 
 Drug repurposing inference proritizes candidate drugs for a given set of disease nodes.  
