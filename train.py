@@ -76,7 +76,7 @@ inference = args.inference
 set_seed(seed)
 print_reproducibility_settings(seed)
 
-Epoch = 100
+Epoch = 1
 patience_limit = 10
 with open("data/parameters.json", 'r') as file:
     all_param = json.load(file)
@@ -101,27 +101,27 @@ if inference == "random_link_split":
     queried_node_types = ['disease|drug', 'disease|drug', 'disease|drug', 'drug|gene/protein', 'drug|effect/phenotype']
     edge_flags_val = [1, 2, 3, 4, 5]
     edge_flags_test = [1, 2, 3, 4, 5]
-    train_txgnn = pd.read_csv(f"data/TxGNN_splits/random_{seed}/train.csv")
-    val_txgnn = pd.read_csv(f"data/TxGNN_splits/random_{seed}/valid.csv")
-    test_txgnn = pd.read_csv(f"data/TxGNN_splits/random_{seed}/test.csv")
+    train_txgnn = pd.read_csv(f"data/splits/random_{seed}/train.csv")
+    val_txgnn = pd.read_csv(f"data/splits/random_{seed}/valid.csv")
+    test_txgnn = pd.read_csv(f"data/splits/random_{seed}/test.csv")
 
 elif inference == "zero_shot_split":
     queried_edge_types = ['indication', 'contraindication']
     queried_node_types = ['disease|drug', 'disease|drug']
     edge_flags_val = [1, 2]
     edge_flags_test = [1, 2]
-    train_txgnn = pd.read_csv(f"data/TxGNN_splits/complex_disease_{seed}/train.csv")
-    val_txgnn = pd.read_csv(f"data/TxGNN_splits/complex_disease_{seed}/valid.csv")
-    test_txgnn = pd.read_csv(f"data/TxGNN_splits/complex_disease_{seed}/test.csv")
+    train_txgnn = pd.read_csv(f"data/splits/complex_disease_{seed}/train.csv")
+    val_txgnn = pd.read_csv(f"data/splits/complex_disease_{seed}/valid.csv")
+    test_txgnn = pd.read_csv(f"data/splits/complex_disease_{seed}/test.csv")
 
 elif inference == "rare_disease":
     queried_edge_types = ['indication', 'contraindication', 'off-label use']
     queried_node_types = ['disease|drug', 'disease|drug', 'disease|drug']
     edge_flags_val = [1, 2, 3]
     edge_flags_test = [1, 2, 3]
-    train_txgnn = pd.read_csv(f"data/TxGNN_splits/rare_disease_{seed}/train.csv", low_memory=False)
-    val_txgnn   = pd.read_csv(f"data/TxGNN_splits/rare_disease_{seed}/valid.csv", low_memory=False)
-    test_txgnn  = pd.read_csv(f"data/TxGNN_splits/rare_disease_{seed}/test.csv",  low_memory=False)
+    train_txgnn = pd.read_csv(f"data/splits/rare_disease_{seed}/train.csv", low_memory=False)
+    val_txgnn   = pd.read_csv(f"data/splits/rare_disease_{seed}/valid.csv", low_memory=False)
+    test_txgnn  = pd.read_csv(f"data/splits/rare_disease_{seed}/test.csv",  low_memory=False)
 
 else:
     area = inference
@@ -129,9 +129,9 @@ else:
     queried_node_types = ['disease|drug', 'disease|drug']
     edge_flags_val = [1, 2]
     edge_flags_test = [1, 2]
-    train_txgnn = pd.read_csv(f"data/TxGNN_splits/{area}_{seed}/train.csv").dropna()
-    val_txgnn = pd.read_csv(f"data/TxGNN_splits/{area}_{seed}/valid.csv").dropna()
-    test_txgnn = pd.read_csv(f"data/TxGNN_splits/{area}_{seed}/test.csv").dropna()
+    train_txgnn = pd.read_csv(f"data/splits/{area}_{seed}/train.csv").dropna()
+    val_txgnn = pd.read_csv(f"data/splits/{area}_{seed}/valid.csv").dropna()
+    test_txgnn = pd.read_csv(f"data/splits/{area}_{seed}/test.csv").dropna()
 
 type2order = dict(zip(queried_edge_types, queried_node_types))
 train_txgnn, val_txgnn, test_txgnn = prepare_txgnn_data(nodes, train_txgnn, val_txgnn, test_txgnn, type2order)
