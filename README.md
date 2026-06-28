@@ -34,7 +34,7 @@ cd NetMedGPT
 conda env create -f environment.yml
 conda activate netmedgpt
 pip install -r requirements.txt
-pip install -e .
+pip install -e . --no-deps
 ```
 
 #### Option B: pip
@@ -45,7 +45,7 @@ conda activate netmedgpt
 
 python -m pip install -U pip
 pip install -r requirements.txt
-pip install -e .
+pip install -e . --no-deps
 ```
 
 ### 2. Data download
