@@ -11,10 +11,10 @@ import time
 
 ####### argparse
 parser = argparse.ArgumentParser()
-parser.add_argument("--gpu", required=False, default= 0, help= "GPU device ID")
+parser.add_argument("--gpu", required=False, default= 0, type=int, help= "GPU device ID")
 parser.add_argument("--head_csv", required=True, help="CSV file containing disease node indices")
-parser.add_argument("--batch_size", required=False, default= 1, help= "provide batch size: it should be less than number of the provided disaeses")
-parser.add_argument("--N_top", required=False, default= 20, help= "provide the number of the top prediction for drug nodes")
+parser.add_argument("--batch_size", required=False, default= 1, type=int, help= "provide batch size: it should be less than number of the provided disaeses")
+parser.add_argument("--N_top", required=False, default= 20, type=int, help= "provide the number of the top prediction for drug nodes")
 
 args = parser.parse_args()
 device = torch.device(f'cuda:{args.gpu}' if torch.cuda.is_available() else 'cpu')

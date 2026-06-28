@@ -11,13 +11,13 @@ import time
 
 ####### argparse
 parser = argparse.ArgumentParser()
-parser.add_argument("--gpu", required=False, default= 0, help= "GPU device ID")
+parser.add_argument("--gpu", required=False, default= 0, type=int, help= "GPU device ID")
 parser.add_argument("--head_csv", required=True, help="CSV file containing head node indices")
 parser.add_argument("--head_type", required=False, default= "drug", help= "provide head type")
 parser.add_argument("--tail_type", required=False, default= "gene/protein", help= "provide tail type")
 parser.add_argument("--relation_type", required=False, default= "drug_protein", help= "provide the relation type")
-parser.add_argument("--N_top", required=False, default= 20, help= "provide the number of the top prediction for tail node")
-parser.add_argument("--batch_size", required=False, default= 1, help= "provide batch size: it should be less than number of the provided heads")
+parser.add_argument("--N_top", required=False, default= 20, type=int, help= "provide the number of the top prediction for tail node")
+parser.add_argument("--batch_size", required=False, default= 1, type=int, help= "provide batch size: it should be less than number of the provided heads")
 
 args = parser.parse_args()
 device = torch.device(f'cuda:{args.gpu}' if torch.cuda.is_available() else 'cpu')
