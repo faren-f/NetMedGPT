@@ -1,12 +1,12 @@
 # ---- PyTorch + CUDA 11.8 (default) --------------------------
---index-url https://download.pytorch.org/whl/cu118
+--extra-index-url https://download.pytorch.org/whl/cu118
 --find-links https://data.pyg.org/whl/torch-2.2.0+cu118.html
 torch==2.2.0+cu118
 torchvision==0.17.0+cu118
 torchaudio==2.2.0+cu118
 
 # ---- PyTorch + CUDA 11.6 (comment out the block above and uncomment below) ----
-# --index-url https://download.pytorch.org/whl/cu116
+# --extra-index-url https://download.pytorch.org/whl/cu116
 # --find-links https://data.pyg.org/whl/torch-2.2.0+cu116.html
 # torch==2.2.0+cu116
 # torchvision==0.17.0+cu116
