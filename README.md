@@ -311,13 +311,7 @@ python subnetwork_generator.py [arguments]
 
 #### Example
 ```
-python generate_subnetwork.py \
-  --gpu 0 \
-  --head_index 14016 \
-  --head_type drug \
-  --tail_type gene/protein \
-  --relation_type drug_protein \
-  --N_top 5
+python generate_subnetwork.py --gpu 0 --head_index 14016 --head_type drug --N_top 5
 ```
 
 #### Notes
