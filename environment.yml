@@ -9,6 +9,7 @@ channels:
 dependencies:
   - python=3.10
   - pip
+  - jupyterlab=4.0.7
 
   - pip:
     # ---- PyTorch (CUDA 11.8) ----
@@ -42,7 +43,6 @@ dependencies:
     - matplotlib==3.10.3
 
     # ---- Jupyter ----
-    - jupyterlab==4.4.4
     - ipykernel==6.29.5
     - ipywidgets==8.1.7
     - widgetsnbextension==4.0.14
