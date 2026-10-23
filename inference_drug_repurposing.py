@@ -80,6 +80,7 @@ model = TransformerModel(
     pos_emb='fixed',
 ).to(device)
 model.load_state_dict(state_dict)
+model.eval()
 
 ##############################################################################################################
 # load the model: LP head–indication

@@ -19,14 +19,19 @@ from netmedgpt.prepare_txgnn_splits import prepare_txgnn_data
 from netmedgpt.sentence_generation import sentence_generation
 from config import set_seed, worker_init_fn, print_reproducibility_settings
 import warnings
+import copy
+
 warnings.filterwarnings("ignore")
 
 
 '''
 for seed in 1 2 3 4 5; do python train.py --gpu 2 --seed $seed --inference rare_disease;   done
-
 '''
 
+
+'''
+python train.py --inference zero_shot_split_patient --gpu 0 --seed 1
+'''
 
 def optimal_thresholds(pred, labels, edge_type_flag, edge_flags):
     """Return the threshold that maximises F1 on pred/labels for each edge type."""
@@ -76,7 +81,7 @@ inference = args.inference
 set_seed(seed)
 print_reproducibility_settings(seed)
 
-Epoch = 1
+Epoch = 100
 patience_limit = 10
 with open("data/parameters.json", 'r') as file:
     all_param = json.load(file)
@@ -195,7 +200,7 @@ test_data_edge_label = data['test_data_edge_label']
 test_data_edge_label_index = data['test_data_edge_label_index_with_relation']
 edge_type_flag_test = data['edge_type_flag_test']
 
-log_name = f"netmedgpt_{inference}_{seed}"
+log_name = f"netmedgpt_{inference}_seed{seed}"
 
 model_save_path = f"{model_dir}/{log_name}.pt"
 seq_len = (all_param['node2vec']['walk_length']*2)-1
@@ -259,23 +264,34 @@ for epoch in range(Epoch):
 
     if (auprc > best_auprc):
         best_auprc = auprc
-        best_model_state = model.state_dict()
-        best_optimizer_state = optimizer.state_dict()
+        best_model_state = copy.deepcopy(model.state_dict())
+        best_optimizer_state = copy.deepcopy(optimizer.state_dict())
         best_epoch = epoch + 1
         best_param = best_hyperparam
         loss = avg_loss
         patience_counter = 0
+        pred_test = sim(test_data_edge_label_index, model, batch_size=best_hyperparam['batch_size'], method='prob', device=device, mask_token=mask_token, seq_len=seq_len)
+        pred_test = torch.tensor(pred_test, dtype=torch.float32)
+        LP_result_test = link_pred_val(pred_test, test_data_edge_label, edge_type_flag_test, all_param, edge_type=edge_flags_test)
+        f1_test, _ = f1_per_edge_type(pred_test, test_data_edge_label, edge_type_flag_test, edge_flags_test, thresholds=val_thresholds)
+        hit_k_test, precision_k_test = node_level_eval(test_data_edge_label_index, test_data_edge_label, all_ids_node2, model, device=device, mask_token=mask_token, seq_len=seq_len)
+        best_LP_result_val, best_f1_val = LP_result_val, f1_val
+        best_hit_k_val, best_precision_k_val = hit_k_val, precision_k_val
+        print(f"epoch {epoch+1} | loss {avg_loss:.4f} | val AUPRC {auprc:.4f} | "
+              f"test AUC {LP_result_test['auc'].mean():.4f} | test AUPRC {LP_result_test['auprc'].mean():.4f}")
+        print(LP_result_test)
+
     else:
         patience_counter += 1
-        print(f"patience_counter is {patience_counter}")
+        print(f"epoch {epoch+1} | loss {avg_loss:.4f} | val AUPRC {auprc:.4f} | patience_counter is {patience_counter}")
 
 
-    pred_test = sim(test_data_edge_label_index, model, batch_size=best_hyperparam['batch_size'], method='prob', device=device, mask_token=mask_token, seq_len=seq_len)
-    pred_test = torch.tensor(pred_test, dtype=torch.float32)
+    # pred_test = sim(test_data_edge_label_index, model, batch_size=best_hyperparam['batch_size'], method='prob', device=device, mask_token=mask_token, seq_len=seq_len)
+    # pred_test = torch.tensor(pred_test, dtype=torch.float32)
 
-    LP_result_test = link_pred_val(pred_test, test_data_edge_label, edge_type_flag_test, all_param, edge_type=edge_flags_test)
-    f1_test, _ = f1_per_edge_type(pred_test, test_data_edge_label, edge_type_flag_test, edge_flags_test, thresholds=val_thresholds)
-    hit_k_test, precision_k_test = node_level_eval(test_data_edge_label_index, test_data_edge_label, all_ids_node2, model, device=device, mask_token=mask_token, seq_len=seq_len)
+    # LP_result_test = link_pred_val(pred_test, test_data_edge_label, edge_type_flag_test, all_param, edge_type=edge_flags_test)
+    # f1_test, _ = f1_per_edge_type(pred_test, test_data_edge_label, edge_type_flag_test, edge_flags_test, thresholds=val_thresholds)
+    # hit_k_test, precision_k_test = node_level_eval(test_data_edge_label_index, test_data_edge_label, all_ids_node2, model, device=device, mask_token=mask_token, seq_len=seq_len)
 
     if (patience_counter >= patience_limit):
             break
@@ -298,13 +314,13 @@ if best_model_state:
 
 # Save final val result
 columns = ['auc', 'auprc']
-LP_result_val_df = pd.DataFrame(LP_result_val, columns=columns)
-LP_result_val_df['f1'] = f1_val
+LP_result_val_df = pd.DataFrame(best_LP_result_val, columns=columns)
+LP_result_val_df['f1'] = best_f1_val
 LP_result_val_df.index = queried_edge_types
 LP_result_val_df['seed'] = seed
 
-hit_val = pd.DataFrame(hit_k_val, columns=['hit'])
-precision_val = pd.DataFrame(precision_k_val, columns=['precision'])
+hit_val = pd.DataFrame(best_hit_k_val, columns=['hit'])
+precision_val = pd.DataFrame(best_precision_k_val, columns=['precision'])
 hit_val.index = queried_edge_types
 precision_val.index = queried_edge_types
 hit_precision_val = pd.concat([hit_val, precision_val], axis=1)
