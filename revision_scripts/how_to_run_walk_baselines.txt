@@ -1,0 +1,97 @@
+Random-walk baselines (node2vec, DREAMwalk) on the identical NetMedGPT walk corpus
+================================================================================
+
+All methods use the same TxGNN splits (data/splits/random_N, data/splits/complex_disease_N), the same
+Node2Vec walk corpus NetMedGPT was trained on, the same val/test pairs and the same metrics.
+
+What is where
+-------------
+Conda environment     : walk_baselines   (gensim, xgboost, parmap, g++)
+DREAMwalk code        : /home/bbc8731/DREAMwalk   (github.com/eugenebang/DREAMwalk, commit c481e4e)
+Scripts (revision_scripts/)  : build_corpus.py, node2vec_baseline.py, dreamwalk_samecorpus.py,
+                        statistical_significance_walk_baselines.py, run_all_baselines.sh, memlimit.py
+Corpus cache          : data/new_analysis/corpus/<split>_seed<N>.pt
+Results               : data/result/new_analysis/<method>_<split>_seed<N>/
+Long table            : data/result/new_analysis/walk_baselines_long.csv
+Statistics            : data/result/new_analysis/summary_walk_baselines.csv
+                        data/result/new_analysis/statistical_significance_walk_baselines.csv
+
+Methods (name in the results)
+-----------------------------
+node2vec_cosine           node2vec skip-gram on node-only walks, score = cosine similarity
+node2vec_classifier       node2vec skip-gram on node-only walks, score = logistic regression per task
+node2vec_rel_cosine       skip-gram on walks with relation tokens (same sentences as NetMedGPT), cosine
+node2vec_rel_classifier   skip-gram on walks with relation tokens, logistic regression per task
+dreamwalk_samecorpus      DREAMwalk heterogeneous skip-gram + DREAMwalk XGBoost classifier, on the same walks
+
+
+1. Setup (in every new terminal / tmux window)
+----------------------------------------------
+cd /home/bbc8731/NetMedGPT
+conda activate walk_baselines
+
+Check that the g++ of the environment is used (needed by DREAMwalk):
+which g++        ->  /home/bbc8731/miniconda3/envs/walk_baselines/bin/g++
+
+
+2. Run everything at once (recommended)
+---------------------------------------
+bash revision_scripts/run_all_baselines.sh 2>&1 | tee run_all_baselines.log
+
+This runs, for random_link_split and zero_shot_split and seeds 1-5:
+  build_corpus.py -> 4 node2vec variants -> dreamwalk_samecorpus.py
+and at the end statistical_significance_walk_baselines.py.
+Every job runs under memlimit.py (stopped above 150 GB RAM).
+Runs that already have a result folder are skipped, so the script can be restarted after a stop.
+At the end, lines starting with FAILED list any job that did not finish.
+Time: about 23 min per split and seed (about 4 h for all), peak RAM about 7 GB.
+
+
+3. Run step by step (one split and seed)
+----------------------------------------
+Replace the split (random_link_split or zero_shot_split) and the seed (1 to 5) as needed.
+
+Step 1 - walk corpus and val/test pairs (cached, needed once per split and seed):
+PYTHONPATH=. python revision_scripts/memlimit.py --limit_gb 150 -- python revision_scripts/build_corpus.py --inference random_link_split --seed 1
+
+Optional, once: check that the corpus is identical when generated again
+(should print "Corpus reproducible: True"):
+PYTHONPATH=. python revision_scripts/build_corpus.py --inference random_link_split --seed 1 --check_reproducible 1
+
+Step 2 - node2vec, 4 variants:
+PYTHONPATH=. python revision_scripts/memlimit.py --limit_gb 150 -- python revision_scripts/node2vec_baseline.py --inference random_link_split --seed 1 --gpu 0 --keep_relations 0 --scoring cosine
+PYTHONPATH=. python revision_scripts/memlimit.py --limit_gb 150 -- python revision_scripts/node2vec_baseline.py --inference random_link_split --seed 1 --gpu 0 --keep_relations 0 --scoring classifier
+PYTHONPATH=. python revision_scripts/memlimit.py --limit_gb 150 -- python revision_scripts/node2vec_baseline.py --inference random_link_split --seed 1 --gpu 0 --keep_relations 1 --scoring cosine
+PYTHONPATH=. python revision_scripts/memlimit.py --limit_gb 150 -- python revision_scripts/node2vec_baseline.py --inference random_link_split --seed 1 --gpu 0 --keep_relations 1 --scoring classifier
+
+Step 3 - DREAMwalk on the same corpus:
+PYTHONPATH=. python revision_scripts/memlimit.py --limit_gb 150 -- python revision_scripts/dreamwalk_samecorpus.py --inference random_link_split --seed 1 --gpu 0 --dreamwalk_dir /home/bbc8731/DREAMwalk
+
+Do not run two DREAMwalk jobs at the same time (DREAMwalk uses fixed temporary file names in its folder).
+
+Step 4 - statistics (after all splits and seeds are done):
+PYTHONPATH=. python revision_scripts/statistical_significance_walk_baselines.py
+
+
+4. What to check in the output
+------------------------------
+Each run ends with:  val AUPRC ... | test AUC ... | test AUPRC ...
+                     Results saved to data/result/new_analysis/<method>_<split>_seed<N>
+memlimit.log shows the memory use; KILLED means the job went above the limit.
+
+Harmless messages:
+  "Exception ignored in: ... our_dot_float"  (gensim 4.4.0)
+  DtypeWarning, FutureWarning, numpy "not writable" warning
+
+
+5. Optional settings
+--------------------
+node2vec_baseline.py:    --dim 300  --window 4  --negative 5  --epochs 5  --workers 30
+dreamwalk_samecorpus.py: --dim 300  --window 4  --workers 30  --use_hetsg 1 (0 = plain skip-gram)
+
+
+6. Not recommended: dreamwalk_native.py
+---------------------------------------
+dreamwalk_native.py runs DREAMwalk with its own walk generation on the training edges.
+In the test run it took about 5 h for one step and then stopped with an error inside the DREAMwalk code
+("Total of weights must be greater than zero"), so dreamwalk_samecorpus is used as the DREAMwalk baseline.

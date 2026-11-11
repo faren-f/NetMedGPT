@@ -23,3 +23,5 @@ __pycache__/
 .Rhistory
 tmp/
 other/
+explanations/
+paper/

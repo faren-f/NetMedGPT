@@ -71,7 +71,7 @@ def f1_per_edge_type(pred, labels, edge_type_flag, edge_flags, thresholds=None):
 parser = argparse.ArgumentParser()
 parser.add_argument("--gpu", required=False, default= 0, help="GPU device ID")
 parser.add_argument("--seed", required=False, default= 1, help="Random seed")
-parser.add_argument("--inference", required=False, default= "random_link_split", help="please select among: random_link_split, zero_shot_split, rare_disease, adrenal_gland, anemia, autoimmune, cardiovascular, cell_proliferation, diabetes, mental_health, metabolic_disorder, neurodigenerative")
+parser.add_argument("--inference", required=False, default= "random_link_split", help="please select among: random_link_split, zero_shot_split, random_link_split_curated, zero_shot_split_curated, rare_disease, adrenal_gland, anemia, autoimmune, cardiovascular, cell_proliferation, diabetes, mental_health, metabolic_disorder, neurodigenerative")
 
 args = parser.parse_args()
 device = torch.device(f'cuda:{args.gpu}' if torch.cuda.is_available() else 'cpu')
@@ -118,6 +118,25 @@ elif inference == "zero_shot_split":
     train_txgnn = pd.read_csv(f"data/splits/complex_disease_{seed}/train.csv")
     val_txgnn = pd.read_csv(f"data/splits/complex_disease_{seed}/valid.csv")
     test_txgnn = pd.read_csv(f"data/splits/complex_disease_{seed}/test.csv")
+
+# same splits with the training edges restricted to the curated KG (revision_scripts/curated_kg_training/make_curated_splits.ipynb)
+elif inference == "random_link_split_curated":
+    queried_edge_types = ['indication', 'contraindication', 'off-label use', 'drug_protein', 'drug_effect']
+    queried_node_types = ['disease|drug', 'disease|drug', 'disease|drug', 'drug|gene/protein', 'drug|effect/phenotype']
+    edge_flags_val = [1, 2, 3, 4, 5]
+    edge_flags_test = [1, 2, 3, 4, 5]
+    train_txgnn = pd.read_csv(f"data/splits_curated/random_{seed}/train.csv")
+    val_txgnn = pd.read_csv(f"data/splits_curated/random_{seed}/valid.csv")
+    test_txgnn = pd.read_csv(f"data/splits_curated/random_{seed}/test.csv")
+
+elif inference == "zero_shot_split_curated":
+    queried_edge_types = ['indication', 'contraindication']
+    queried_node_types = ['disease|drug', 'disease|drug']
+    edge_flags_val = [1, 2]
+    edge_flags_test = [1, 2]
+    train_txgnn = pd.read_csv(f"data/splits_curated/complex_disease_{seed}/train.csv")
+    val_txgnn = pd.read_csv(f"data/splits_curated/complex_disease_{seed}/valid.csv")
+    test_txgnn = pd.read_csv(f"data/splits_curated/complex_disease_{seed}/test.csv")
 
 elif inference == "rare_disease":
     queried_edge_types = ['indication', 'contraindication', 'off-label use']
