@@ -119,8 +119,12 @@ elif inference == "zero_shot_split":
     val_txgnn = pd.read_csv(f"data/splits/complex_disease_{seed}/valid.csv")
     test_txgnn = pd.read_csv(f"data/splits/complex_disease_{seed}/test.csv")
 
-# same splits with the training edges restricted to the curated KG (revision_scripts/curated_kg_training/make_curated_splits.ipynb)
+# same splits restricted to the curated KG (revision_scripts/curated_kg_training/make_curated_splits.ipynb),
+# trained and evaluated on the curated KG files
 elif inference == "random_link_split_curated":
+    nodes = pd.read_csv(os.path.join(data_dir, 'KG/nodes_preprocessed.csv'), sep= ',')
+    edge = pd.read_csv(os.path.join(data_dir, "KG/edges_preprocessed.csv"))
+    feat = torch.load(os.path.join(data_dir, "KG/embeddings_preprocessedKG.pt"))
     queried_edge_types = ['indication', 'contraindication', 'off-label use', 'drug_protein', 'drug_effect']
     queried_node_types = ['disease|drug', 'disease|drug', 'disease|drug', 'drug|gene/protein', 'drug|effect/phenotype']
     edge_flags_val = [1, 2, 3, 4, 5]
@@ -130,6 +134,9 @@ elif inference == "random_link_split_curated":
     test_txgnn = pd.read_csv(f"data/splits_curated/random_{seed}/test.csv")
 
 elif inference == "zero_shot_split_curated":
+    nodes = pd.read_csv(os.path.join(data_dir, 'KG/nodes_preprocessed.csv'), sep= ',')
+    edge = pd.read_csv(os.path.join(data_dir, "KG/edges_preprocessed.csv"))
+    feat = torch.load(os.path.join(data_dir, "KG/embeddings_preprocessedKG.pt"))
     queried_edge_types = ['indication', 'contraindication']
     queried_node_types = ['disease|drug', 'disease|drug']
     edge_flags_val = [1, 2]

@@ -1,18 +1,18 @@
 NetMedGPT retrained on the curated KG
 =====================================
 
-Question: does performance stay the same when NetMedGPT is trained only on the edges of the curated KG
-(edges_preprocessed.csv: no drug_drug edges, drugs with broad indications and misclassified drug-ADR edges removed)?
+Question: does performance stay the same when NetMedGPT is trained on the curated KG
+(nodes_preprocessed.csv, edges_preprocessed.csv, embeddings_preprocessedKG.pt: no drug_drug edges, drugs with broad
+indications and misclassified drug-ADR edges removed)?
 
-1. Curated training splits (done; netmedgpt env, from this folder or the repository root):
+1. Curated splits (done; netmedgpt env):
        make_curated_splits.ipynb
-   -> data/splits_curated/random_<seed>/ and complex_disease_<seed>/  (seeds 1-5)
-      train.csv = training edges of the original split that are in the curated KG (66% of the rows; drug_drug and the
-      edges of the 1,477 removed drugs are dropped); valid.csv / test.csv = unchanged copies, so the test pairs
-      (including the negatives) are identical to the original runs.
-   -> data/splits_curated/summary.csv
+   -> data/splits_curated/random_<seed>/ and complex_disease_<seed>/  (seeds 1-5), summary.csv
+      train.csv, valid.csv and test.csv contain only the edges of the original split that are in the curated KG
+      (the 1,477 removed drugs are not in any of them).
 
-2. Training (train.py, new --inference options random_link_split_curated / zero_shot_split_curated):
+2. Training (train.py, --inference random_link_split_curated / zero_shot_split_curated; these options read the
+   curated splits and the curated KG files, so the negatives are also sampled from the curated KG):
        cd /home/bbc8731/NetMedGPT
        for s in 1 2 3 4 5; do python train.py --gpu 0 --seed $s --inference random_link_split_curated; done
        for s in 1 2 3 4 5; do python train.py --gpu 0 --seed $s --inference zero_shot_split_curated; done
@@ -20,9 +20,13 @@ Question: does performance stay the same when NetMedGPT is trained only on the e
    -> results    data/result/netmedgpt_<inference>_seed<s>/
    (the original checkpoints and results are not touched)
 
-3. Comparison with the original runs (to do after training): same test pairs, paired over seeds.
-   Report two versions:
-   - all test pairs;
-   - test pairs whose drug is in the curated KG. About half of the indication edges (and ~23% of all test drug edges)
-     involve the 1,477 drugs removed by curation; in the curated runs these drugs have no training edges, so a drop on
-     those pairs is expected and is not an effect of the pseudo-sentence coverage.
+3. Comparison on identical test pairs (after training):
+       compare_curated.ipynb
+   Builds the curated test pairs (positives + negatives, as in other/evaluate_checkpoints.py), scores the original
+   checkpoints (pairs mapped to full-KG indices by node ID) and the curated checkpoints on them; AUROC, AUPRC,
+   Recall@100 per relation, paired t-test over seeds. Seeds without a curated checkpoint are skipped.
+   -> data/new_analysis/curated_kg_training/curated_vs_original_{per_seed,summary}.csv
+
+Note: on the curated test pairs the original model scores lower than on the full test set (e.g. random split seed 1,
+indication AUROC 0.894 vs 0.947), because the removed drugs - frequent, easy-to-predict drugs - are not in these pairs.
+The comparison is therefore always against the original model on the same curated pairs, not against the paper values.
