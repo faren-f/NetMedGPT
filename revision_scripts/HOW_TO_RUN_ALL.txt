@@ -1,0 +1,109 @@
+Which script for which analysis (revision, reviewer comments)
+=============================================================
+
+Run everything from the repository root (/home/bbc8731/NetMedGPT). Environment / kernel: netmedgpt unless noted.
+"Viewer" = only reads saved results, no GPU needed.
+
+
+R1-1 (novelty) and R1-2 (information preserved / lost in the pseudo-sentences)
+------------------------------------------------------------------------------
+1. revision_scripts/walk_coverage_analysis.ipynb                        GPU
+   coverage, check 1 (theory), check 3+ edge groups
+   -> data/new_analysis/coverage/ (incl. check3x_edges.csv per seed)
+2. revision_scripts/walk_coverage_curated_kg.ipynb
+   coverage on the curated KG
+   -> data/new_analysis/coverage/curated_kg/
+3. revision_scripts/check3_paper_metrics.ipynb                          GPU, needs 1
+   edges missed by the walks, NetMedGPT, benchmark evaluation
+   -> data/new_analysis/coverage/check3x_paper_metrics_{per_seed,summary}.csv
+4. revision_scripts/check3_paper_metrics_baselines.ipynb                walk_baselines kernel, needs 1 and 3
+   same edges for node2vec / DREAMwalk (training code in walk_coverage_baselines.ipynb)
+   -> data/new_analysis/coverage/check3x_paper_metrics_baselines_per_seed.csv
+5. revision_scripts/walk_coverage_results.ipynb                         viewer
+   all tables; plots in sections 4 and 5
+   -> missed_edges_vs_walk_methods_{auprc,recall100}.*, coverage_degree_relation.*
+6. revision_scripts/neighbourhood_analysis_rare.ipynb                   GPU (scoring)
+   NetMedGPT vs TxGNN by neighbourhood size (rare disease split); plot in the last cell
+   -> data/new_analysis/neighbourhood_rare/
+
+
+Walk-based baselines (benchmark; used in R1-1, R1-2, R1-3)
+---------------------------------------------------------
+1. revision_scripts/build_corpus.py, node2vec_baseline.py, dreamwalk_samecorpus.py      walk_baselines env
+   (commands: how_to_run_walk_baselines.txt, run_all_baselines.sh)
+   -> data/result/new_analysis/<method>_<split>_seed<N>/, walk_baselines_long.csv
+2. revision_scripts/dreamwalk_hierarchy.ipynb
+   ATC / MeSH hierarchy for DREAMwalk -> data/dreamwalk_inputs/hierarchy_full_kg.csv
+3. revision_scripts/dreamwalk_full.py --inference random_link_split | zero_shot_split | rare_disease
+   walk_baselines env, ~14-16 h per seed; run command at the top of the file
+   -> data/result/new_analysis/dreamwalk_full_<split>_seed<N>/
+
+
+R1-3 (strong baselines: drug-target interaction and adverse drug reaction)
+--------------------------------------------------------------------------
+1. revision_scripts/dti_inputs.py, then psichic_baseline.py             PSICHIC env, GPU
+   -> data/result/new_analysis/psichic_random_link_split_seed<N>/
+2. revision_scripts/adr_inputs.py, then deepadr_baseline.py; galeano_baseline.py
+   -> deepadr_..., galeano_...
+3. ~/All_NetMedGPT/MFAHGN/ADR_comparison/5_mfahgn_on_netmedgpt_pairs.ipynb            mfahgn env
+   -> data/result/new_analysis/mfahgn_random_link_split_seed<N>/
+4. revision_scripts/export_netmedgpt_scores.py (GPU), then compare_overlap_psichic.py,
+   compare_overlap_deepadr.py, compare_overlap.py (Galeano)
+   -> data/result/new_analysis/overlap_netmedgpt_vs_*.csv (Supplementary Tables X, Y, Z;
+      text in explanations/supplementary_tables_DTI_ADR.txt)
+
+
+R1-4 (clinical trials)
+----------------------
+revision_scripts/clinical_trials_phase_stratification.ipynb             GPU
+scoring with the BioMedFormer clinical-trial model, stratification by trial phase and status, trend test, plot
+-> data/new_analysis/clinical_trials_phase/
+
+
+R2-2 (rare disease evaluation protocol)
+---------------------------------------
+1. other/create_rare_disease_splits.py                  -> data/splits/rare_disease_<seed>/
+2. train.py --inference rare_disease --seed <s>         -> NetMedGPT rare disease checkpoints and results
+3. other/export_rare_eval_pairs.py, then
+   ~/All_NetMedGPT/txgnn_docker/TxGNN_github/reproduce/eval_txgnn_netmedgpt_metrics.py
+                                                        -> data/result/txgnn_rare_disease_seed<N>/ (same pairs)
+4. revision_scripts/dreamwalk_full.py --inference rare_disease (see above)
+
+
+R2-3 (statistics; used for all comments)
+----------------------------------------
+1. other/statistical_significance_all_methods.ipynb
+   all paired tests (two-sided and one-sided, Holm, bootstrap CIs, effect sizes)
+   -> data/result/statistical_significance_all_methods.csv, all_methods_per_seed.csv
+2. other/statistical_significance_plots.ipynb            viewer
+   Supplementary Fig. S2 / S5-style figures -> data/result/significance_plots/
+
+
+Main figures
+------------
+reproduce_plots/reproduce_plots.ipynb
+   Fig. 2, incl. the rare disease figure (cell 12); run after the significance notebook (cell 12 reads its CSVs)
+data/result/all_methods_results.csv / .xlsx
+   no script: updated by hand during the revision; backups in data/result/backup_all_methods_results/
+
+
+Curated KG retraining
+---------------------
+1. revision_scripts/curated_kg_training/make_curated_splits.ipynb      -> data/splits_curated/
+2. train.py --inference random_link_split_curated | zero_shot_split_curated --seed <s>
+3. revision_scripts/curated_kg_training/compare_curated.ipynb          GPU
+   original vs curated models on the same curated test pairs -> data/new_analysis/curated_kg_training/
+   (details: revision_scripts/curated_kg_training/README.txt)
+
+
+Optional (uncertainty / interpretability)
+-----------------------------------------
+revision_scripts/prediction_entropy.ipynb       -> data/new_analysis/prediction_uncertainty/
+revision_scripts/drugmechdb_evaluation.ipynb    -> data/new_analysis/drugmechdb/
+tmp/subnetwork_entropy.ipynb (not run yet, ~2 h GPU) -> data/new_analysis/subnetwork_uncertainty_entropy/
+
+
+Run order where it matters
+--------------------------
+walk_coverage_analysis -> check3_paper_metrics -> check3_paper_metrics_baselines -> walk_coverage_results
+all baseline runs -> statistical_significance_all_methods -> statistical_significance_plots and reproduce_plots
